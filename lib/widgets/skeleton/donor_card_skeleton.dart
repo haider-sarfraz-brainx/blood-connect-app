@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/theme_bloc/theme_bloc.dart';
 import '../../config/theme/base.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/extensions/color.dart';
-import '../../injection_container.dart';
 
 class DonorCardSkeleton extends StatefulWidget {
-  const DonorCardSkeleton({super.key});
+  final BaseTheme? baseTheme;
+
+  const DonorCardSkeleton({super.key, this.baseTheme});
 
   @override
   State<DonorCardSkeleton> createState() => _DonorCardSkeletonState();
@@ -37,132 +39,129 @@ class _DonorCardSkeletonState extends State<DonorCardSkeleton>
 
   @override
   Widget build(BuildContext context) {
-    final baseTheme = sl<ThemeBloc>().state.baseTheme;
+    final baseTheme =
+        widget.baseTheme ?? context.read<ThemeBloc>().state.baseTheme;
 
     return Container(
-      margin: EdgeInsets.only(bottom: AppConstants.gap14Px),
+      margin: const EdgeInsets.only(bottom: AppConstants.gap12Px),
       decoration: BoxDecoration(
         color: baseTheme.white,
         borderRadius: BorderRadius.circular(AppConstants.radius16Px),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppConstants.radius16Px),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+      child: Padding(
+        padding: const EdgeInsets.all(AppConstants.gap16Px),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Left accent bar
+            // ── Header: avatar + name/subtitle + blood group badge ───────
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Avatar circle
+                _buildShimmer(
+                  height: 52,
+                  width: 52,
+                  baseTheme: baseTheme,
+                  borderRadius: 26,
+                ),
+                const SizedBox(width: AppConstants.gap12Px),
+
+                // Name + subtitle
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 2),
+                      _buildShimmer(
+                        height: 16,
+                        width: 150,
+                        baseTheme: baseTheme,
+                        borderRadius: AppConstants.radius4Px,
+                      ),
+                      const SizedBox(height: 6),
+                      _buildShimmer(
+                        height: 13,
+                        width: 100,
+                        baseTheme: baseTheme,
+                        borderRadius: AppConstants.radius4Px,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: AppConstants.gap8Px),
+
+                // Blood group badge
+                _buildShimmer(
+                  height: 26,
+                  width: 44,
+                  baseTheme: baseTheme,
+                  borderRadius: 20,
+                ),
+              ],
+            ),
+
+            const SizedBox(height: AppConstants.gap14Px),
+
+            // ── Divider ──────────────────────────────────────────────────
             _buildShimmer(
-              height: double.infinity,
-              width: 5,
+              height: 1,
+              width: double.infinity,
               baseTheme: baseTheme,
               borderRadius: 0,
             ),
-            // Card body
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.all(AppConstants.gap16Px),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ── Top: avatar + name/info ──────────────────────
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Avatar circle
-                        _buildShimmer(
-                          height: 60,
-                          width: 60,
-                          baseTheme: baseTheme,
-                          borderRadius: 30,
-                        ),
-                        const SizedBox(width: AppConstants.gap14Px),
-                        // Name / subtitle / address
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: AppConstants.gap4Px),
-                              _buildShimmer(
-                                height: 18,
-                                width: 160,
-                                baseTheme: baseTheme,
-                                borderRadius: AppConstants.radius4Px,
-                              ),
-                              const SizedBox(height: AppConstants.gap8Px),
-                              _buildShimmer(
-                                height: 13,
-                                width: 110,
-                                baseTheme: baseTheme,
-                                borderRadius: AppConstants.radius4Px,
-                              ),
-                              const SizedBox(height: AppConstants.gap6Px),
-                              _buildShimmer(
-                                height: 12,
-                                width: 140,
-                                baseTheme: baseTheme,
-                                borderRadius: AppConstants.radius4Px,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
 
-                    const SizedBox(height: AppConstants.gap14Px),
-                    _buildShimmer(
-                      height: 1,
-                      width: double.infinity,
-                      baseTheme: baseTheme,
-                      borderRadius: 0,
-                    ),
-                    const SizedBox(height: AppConstants.gap12Px),
+            const SizedBox(height: AppConstants.gap12Px),
 
-                    // ── Info rows ────────────────────────────────────
-                    _buildInfoRowSkeleton(baseTheme),
-                    const SizedBox(height: AppConstants.gap8Px),
-                    _buildInfoRowSkeleton(baseTheme, width: 200),
+            // ── Meta info rows ────────────────────────────────────────────
+            Wrap(
+              spacing: AppConstants.gap16Px,
+              runSpacing: AppConstants.gap6Px,
+              children: [
+                _buildMetaSkeleton(baseTheme, width: 130),
+                _buildMetaSkeleton(baseTheme, width: 100),
+              ],
+            ),
 
-                    const SizedBox(height: AppConstants.gap14Px),
-                    _buildShimmer(
-                      height: 1,
-                      width: double.infinity,
-                      baseTheme: baseTheme,
-                      borderRadius: 0,
-                    ),
-                    const SizedBox(height: AppConstants.gap12Px),
+            const SizedBox(height: AppConstants.gap14Px),
 
-                    // ── Action buttons ───────────────────────────────
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildShimmer(
-                            height: 40,
-                            width: double.infinity,
-                            baseTheme: baseTheme,
-                            borderRadius: AppConstants.radius10Px,
-                          ),
-                        ),
-                        const SizedBox(width: AppConstants.gap10Px),
-                        Expanded(
-                          child: _buildShimmer(
-                            height: 40,
-                            width: double.infinity,
-                            baseTheme: baseTheme,
-                            borderRadius: AppConstants.radius10Px,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+            // ── Divider ──────────────────────────────────────────────────
+            _buildShimmer(
+              height: 1,
+              width: double.infinity,
+              baseTheme: baseTheme,
+              borderRadius: 0,
+            ),
+
+            const SizedBox(height: AppConstants.gap14Px),
+
+            // ── Action buttons ────────────────────────────────────────────
+            Row(
+              children: [
+                Expanded(
+                  child: _buildShimmer(
+                    height: 40,
+                    width: double.infinity,
+                    baseTheme: baseTheme,
+                    borderRadius: AppConstants.radius12Px,
+                  ),
                 ),
-              ),
+                const SizedBox(width: AppConstants.gap10Px),
+                Expanded(
+                  child: _buildShimmer(
+                    height: 40,
+                    width: double.infinity,
+                    baseTheme: baseTheme,
+                    borderRadius: AppConstants.radius12Px,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -170,18 +169,19 @@ class _DonorCardSkeletonState extends State<DonorCardSkeleton>
     );
   }
 
-  Widget _buildInfoRowSkeleton(BaseTheme baseTheme, {double width = 170}) {
+  Widget _buildMetaSkeleton(BaseTheme baseTheme, {required double width}) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         _buildShimmer(
-          height: 28,
-          width: 28,
-          baseTheme: baseTheme,
-          borderRadius: AppConstants.radius8Px,
-        ),
-        const SizedBox(width: AppConstants.gap10Px),
-        _buildShimmer(
           height: 13,
+          width: 13,
+          baseTheme: baseTheme,
+          borderRadius: 4,
+        ),
+        const SizedBox(width: 4),
+        _buildShimmer(
+          height: 12,
           width: width,
           baseTheme: baseTheme,
           borderRadius: AppConstants.radius4Px,

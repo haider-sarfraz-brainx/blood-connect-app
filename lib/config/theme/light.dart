@@ -5,7 +5,7 @@ import 'base.dart';
 
 class LightTheme implements BaseTheme {
   @override
-  final Color primary = const Color(0xFFAE5005);
+  final Color primary = const Color(0xFFC81D4D);
   @override
   final Color background = const Color(0xFFFFFFFF);
   @override

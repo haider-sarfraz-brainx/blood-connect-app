@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,13 +10,17 @@ import '../../../config/app_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/view_constants.dart';
 import '../../../core/extensions/color.dart';
+import '../../../config/theme/base.dart';
 import '../../../injection_container.dart';
 import '../../../mixin/validation_mixin.dart';
 import '../../../widgets/chip_selection/blood_group_chip_selection.dart';
-import '../../../widgets/custom_button.dart';
 import '../../../widgets/custom_text.dart';
 import '../../../widgets/custom_text_field.dart';
 import '../../../widgets/loading_overlay.dart';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Create Blood Request Screen
+// ─────────────────────────────────────────────────────────────────────────────
 
 class CreateBloodScreen extends StatefulWidget {
   const CreateBloodScreen({super.key});
@@ -24,7 +29,9 @@ class CreateBloodScreen extends StatefulWidget {
   State<CreateBloodScreen> createState() => _CreateBloodScreenState();
 }
 
-class _CreateBloodScreenState extends State<CreateBloodScreen> with ValidationMixin {
+class _CreateBloodScreenState extends State<CreateBloodScreen>
+    with ValidationMixin {
+  // ── Form & controllers ────────────────────────────────────────────────────
   final _formKey = GlobalKey<FormState>();
   final _patientNameController = TextEditingController();
   final _unitsRequiredController = TextEditingController();
@@ -34,12 +41,14 @@ class _CreateBloodScreenState extends State<CreateBloodScreen> with ValidationMi
   final _notesController = TextEditingController();
 
   String? _selectedBloodGroup;
-  
+
   late ThemeBloc themeBloc;
   late BloodRequestBloc bloodRequestBloc;
 
   bool submitButtonDisable = true;
   late StateSetter submitButtonStateSetter;
+
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
 
   @override
   void initState() {
@@ -47,21 +56,6 @@ class _CreateBloodScreenState extends State<CreateBloodScreen> with ValidationMi
     themeBloc = sl<ThemeBloc>();
     bloodRequestBloc = sl<BloodRequestBloc>();
     _addTextControllersListeners();
-  }
-
-  void _addTextControllersListeners() {
-    _patientNameController.addListener(_updateButtonState);
-    _unitsRequiredController.addListener(_updateButtonState);
-    _hospitalNameController.addListener(_updateButtonState);
-    _contactNumberController.addListener(_updateButtonState);
-  }
-
-  void _updateButtonState() {
-    final isValid = _validateForm();
-    if (submitButtonDisable != !isValid) {
-      submitButtonDisable = !isValid;
-      submitButtonStateSetter(() {});
-    }
   }
 
   @override
@@ -79,59 +73,57 @@ class _CreateBloodScreenState extends State<CreateBloodScreen> with ValidationMi
     super.dispose();
   }
 
+  void _addTextControllersListeners() {
+    _patientNameController.addListener(_updateButtonState);
+    _unitsRequiredController.addListener(_updateButtonState);
+    _hospitalNameController.addListener(_updateButtonState);
+    _contactNumberController.addListener(_updateButtonState);
+  }
+
+  // ── Validation (unchanged) ────────────────────────────────────────────────
+
+  void _updateButtonState() {
+    final isValid = _validateForm();
+    if (submitButtonDisable != !isValid) {
+      submitButtonDisable = !isValid;
+      submitButtonStateSetter(() {});
+    }
+  }
+
   bool _validateForm() {
     final patientName = _patientNameController.text.trim();
-    if (patientName.isEmpty || patientName.length < 2) {
-      return false;
-    }
-
+    if (patientName.isEmpty || patientName.length < 2) return false;
     if (_selectedBloodGroup == null || _selectedBloodGroup!.isEmpty) {
       return false;
     }
-
     final unitsRequired = _unitsRequiredController.text.trim();
-    if (unitsRequired.isEmpty) {
-      return false;
-    }
+    if (unitsRequired.isEmpty) return false;
     final units = int.tryParse(unitsRequired);
-    if (units == null || units <= 0) {
-      return false;
-    }
-
+    if (units == null || units <= 0) return false;
     final hospitalName = _hospitalNameController.text.trim();
-    if (hospitalName.isEmpty) {
-      return false;
-    }
-
+    if (hospitalName.isEmpty) return false;
     final contactNumber = _contactNumberController.text.trim();
-    if (contactNumber.isEmpty || contactNumber.length < 10) {
-      return false;
-    }
-
+    if (contactNumber.isEmpty || contactNumber.length < 10) return false;
     return true;
   }
 
   void _onBloodGroupSelected(String bloodGroup) {
-    setState(() {
-      _selectedBloodGroup = bloodGroup;
-    });
+    setState(() => _selectedBloodGroup = bloodGroup);
     _updateButtonState();
   }
+
+  // ── Submission (unchanged) ────────────────────────────────────────────────
 
   Future<void> _handleSubmitRequest() async {
     if (!_validateForm()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: CustomText(
-            text: ViewConstants.pleaseFillAllRequiredFields,
-            textColor: Colors.white,
-          ),
-          backgroundColor: Colors.red,
+        _snackBar(
+          ViewConstants.pleaseFillAllRequiredFields.tr(),
+          Colors.red,
         ),
       );
       return;
     }
-
     bloodRequestBloc.add(
       CreateBloodRequestEvent(
         patientName: _patientNameController.text.trim(),
@@ -149,9 +141,26 @@ class _CreateBloodScreenState extends State<CreateBloodScreen> with ValidationMi
     );
   }
 
+  // ── Snackbar helper ───────────────────────────────────────────────────────
+
+  SnackBar _snackBar(String message, Color color) {
+    return SnackBar(
+      content: Text(
+        message,
+        style: const TextStyle(color: Colors.white),
+      ),
+      backgroundColor: color,
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppConstants.radius12Px),
+      ),
+    );
+  }
+
+  // ── Build ─────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
     final baseTheme = themeBloc.state.baseTheme;
 
     return BlocListener<BloodRequestBloc, BloodRequestState>(
@@ -159,26 +168,12 @@ class _CreateBloodScreenState extends State<CreateBloodScreen> with ValidationMi
       listener: (context, state) {
         if (state is BloodRequestCreated) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: CustomText(
-                text: ViewConstants.requestSubmitted,
-                textColor: Colors.white,
-              ),
-              backgroundColor: Colors.green,
-            ),
+            _snackBar(ViewConstants.requestSubmitted.tr(), Colors.green),
           );
-          // Navigate back with the created request
           AppRouter.pop(context, state.request);
         } else if (state is BloodRequestError) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: CustomText(
-                text: state.message,
-                textColor: Colors.white,
-                translate: false,
-              ),
-              backgroundColor: Colors.red,
-            ),
+            _snackBar(state.message, Colors.red),
           );
         }
       },
@@ -190,69 +185,89 @@ class _CreateBloodScreenState extends State<CreateBloodScreen> with ValidationMi
             overlayColor: baseTheme.background,
             opacity: AppConstants.opacity20Px,
             child: Scaffold(
-              appBar: AppBar(
-                title: CustomText(
-                  text: ViewConstants.requestBlood,
-                  size: AppConstants.font20Px,
-                  weight: FontWeight.w600,
-                ),
-                backgroundColor: baseTheme.background,
-                elevation: 0,
-              ),
+              backgroundColor: baseTheme.background,
               body: SafeArea(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.all(AppConstants.gap20Px),
-                  child: Form(
-                    key: _formKey,
+                child: Form(
+                  key: _formKey,
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(AppConstants.gap20Px),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: AppConstants.gap20Px,
                       children: [
-                        Column(
-                          spacing: AppConstants.gap8Px,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            CustomText(
-                              text: ViewConstants.requestBlood,
-                              weight: FontWeight.w800,
-                              textColor: baseTheme.primary,
-                              size: AppConstants.font28Px,
+                        // ── Back button ──────────────────────────────────
+                        InkWell(
+                          onTap: () => AppRouter.pop(context),
+                          borderRadius: BorderRadius.circular(
+                            AppConstants.radius8Px,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: Icon(
+                              Icons.arrow_back_ios,
+                              size: 25,
+                              color: baseTheme.textColor,
                             ),
-                            CustomText(
-                              text: 'Fill in the details to request blood',
-                              weight: FontWeight.w400,
-                              size: AppConstants.font14Px,
-                              textColor: baseTheme.textColor.fixedOpacity(0.7),
-                              translate: false,
-                            ),
-                          ],
+                          ),
                         ),
+
+                        const SizedBox(height: AppConstants.gap20Px),
+
+                        // ── Page title ───────────────────────────────────
+                        CustomText(
+                          text: ViewConstants.requestBlood,
+                          weight: FontWeight.w800,
+                          textColor: baseTheme.primary,
+                          size: AppConstants.font28Px,
+                        ),
+                        const SizedBox(height: AppConstants.gap8Px),
+                        CustomText(
+                          text: 'Fill in the details below to submit a blood request',
+                          weight: FontWeight.w400,
+                          size: AppConstants.font14Px,
+                          textColor: baseTheme.textColor.fixedOpacity(0.7),
+                          translate: false,
+                        ),
+
+                        const SizedBox(height: AppConstants.gap30Px),
+
+                        // ════════════════════════════════════════════════
+                        // REQUIRED INFORMATION
+                        // ════════════════════════════════════════════════
+                        _SectionHeader(
+                          label: 'Required Information',
+                          baseTheme: baseTheme,
+                        ),
+
+                        const SizedBox(height: AppConstants.gap12Px),
+
+                        // Patient name
                         CustomTextField(
                           labelText: ViewConstants.patientName,
                           hintText: ViewConstants.patientNameHint,
                           controller: _patientNameController,
                           keyboardType: TextInputType.name,
                           prefixIcon: Icon(
-                            Icons.person_outline,
+                            Icons.person_rounded,
                             color: baseTheme.primary,
                           ),
                         ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          spacing: AppConstants.gap8Px,
-                          children: [
-                            CustomText(
-                              text: '${ViewConstants.bloodGroup} *',
-                              size: AppConstants.font14Px,
-                              weight: FontWeight.w600,
-                              textColor: baseTheme.textColor,
-                            ),
-                            BloodGroupChipSelection(
-                              selectedBloodGroup: _selectedBloodGroup,
-                              onBloodGroupSelected: _onBloodGroupSelected,
-                            ),
-                          ],
+
+                        const SizedBox(height: AppConstants.gap12Px),
+
+                        // Blood group
+                        _FieldCard(
+                          label: ViewConstants.bloodGroup.tr(),
+                          isRequired: true,
+                          baseTheme: baseTheme,
+                          child: BloodGroupChipSelection(
+                            selectedBloodGroup: _selectedBloodGroup,
+                            onBloodGroupSelected: _onBloodGroupSelected,
+                          ),
                         ),
+
+                        const SizedBox(height: AppConstants.gap12Px),
+
+                        // Units required
                         CustomTextField(
                           labelText: ViewConstants.unitsRequired,
                           hintText: ViewConstants.unitsRequiredHint,
@@ -262,31 +277,28 @@ class _CreateBloodScreenState extends State<CreateBloodScreen> with ValidationMi
                             FilteringTextInputFormatter.digitsOnly,
                           ],
                           prefixIcon: Icon(
-                            Icons.bloodtype_outlined,
+                            Icons.water_drop_rounded,
                             color: baseTheme.primary,
                           ),
                         ),
+
+                        const SizedBox(height: AppConstants.gap12Px),
+
+                        // Hospital name
                         CustomTextField(
                           labelText: ViewConstants.hospitalName,
                           hintText: ViewConstants.hospitalNameHint,
                           controller: _hospitalNameController,
                           keyboardType: TextInputType.text,
                           prefixIcon: Icon(
-                            Icons.local_hospital_outlined,
+                            Icons.local_hospital_rounded,
                             color: baseTheme.primary,
                           ),
                         ),
-                        CustomTextField(
-                          labelText: ViewConstants.hospitalAddress,
-                          hintText: ViewConstants.hospitalAddressHint,
-                          controller: _hospitalAddressController,
-                          keyboardType: TextInputType.streetAddress,
-                          maxLines: 2,
-                          prefixIcon: Icon(
-                            Icons.location_on_outlined,
-                            color: baseTheme.primary,
-                          ),
-                        ),
+
+                        const SizedBox(height: AppConstants.gap12Px),
+
+                        // Contact number
                         CustomTextField(
                           labelText: ViewConstants.contactNumber,
                           hintText: ViewConstants.contactNumberHint,
@@ -296,10 +308,39 @@ class _CreateBloodScreenState extends State<CreateBloodScreen> with ValidationMi
                             FilteringTextInputFormatter.digitsOnly,
                           ],
                           prefixIcon: Icon(
-                            Icons.phone_outlined,
+                            Icons.phone_rounded,
                             color: baseTheme.primary,
                           ),
                         ),
+
+                        const SizedBox(height: AppConstants.gap30Px),
+
+                        // ════════════════════════════════════════════════
+                        // OPTIONAL INFORMATION
+                        // ════════════════════════════════════════════════
+                        _SectionHeader(
+                          label: 'Optional Information',
+                          baseTheme: baseTheme,
+                        ),
+
+                        const SizedBox(height: AppConstants.gap12Px),
+
+                        // Hospital address
+                        CustomTextField(
+                          labelText: ViewConstants.hospitalAddress,
+                          hintText: ViewConstants.hospitalAddressHint,
+                          controller: _hospitalAddressController,
+                          keyboardType: TextInputType.streetAddress,
+                          maxLines: 2,
+                          prefixIcon: Icon(
+                            Icons.location_on_rounded,
+                            color: baseTheme.primary,
+                          ),
+                        ),
+
+                        const SizedBox(height: AppConstants.gap12Px),
+
+                        // Notes
                         CustomTextField(
                           labelText: ViewConstants.notes,
                           hintText: ViewConstants.notesHint,
@@ -307,25 +348,30 @@ class _CreateBloodScreenState extends State<CreateBloodScreen> with ValidationMi
                           keyboardType: TextInputType.multiline,
                           maxLines: 3,
                           prefixIcon: Icon(
-                            Icons.note_outlined,
+                            Icons.edit_note_rounded,
                             color: baseTheme.primary,
                           ),
                         ),
+
+                        const SizedBox(height: AppConstants.gap30Px),
+
+                        // ── Submit button ────────────────────────────────
                         StatefulBuilder(
-                          builder: (context, state) {
-                            submitButtonStateSetter = state;
-                            return CustomButton(
-                              text: ViewConstants.submitRequest,
-                              onPress: submitButtonDisable ? () {} : _handleSubmitRequest,
-                              bgColor: submitButtonDisable
-                                  ? baseTheme.disable
-                                  : baseTheme.primary,
-                              borderColor: submitButtonDisable
-                                  ? baseTheme.disable
-                                  : baseTheme.primary,
+                          builder: (context, setState) {
+                            submitButtonStateSetter = setState;
+                            return _ActionButton(
+                              label: ViewConstants.submitRequest.tr(),
+                              icon: Icons.send_rounded,
+                              isDisabled: submitButtonDisable,
+                              baseTheme: baseTheme,
+                              onPressed: submitButtonDisable
+                                  ? null
+                                  : _handleSubmitRequest,
                             );
                           },
                         ),
+
+                        const SizedBox(height: AppConstants.gap20Px),
                       ],
                     ),
                   ),
@@ -334,6 +380,162 @@ class _CreateBloodScreenState extends State<CreateBloodScreen> with ValidationMi
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Section Header  —  uppercase label (shared design system)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _SectionHeader extends StatelessWidget {
+  final String label;
+  final BaseTheme baseTheme;
+
+  const _SectionHeader({required this.label, required this.baseTheme});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label.toUpperCase(),
+      style: TextStyle(
+        fontFamily: AppConstants.fontFamilyLato,
+        fontSize: AppConstants.font12Px,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 1.0,
+        color: baseTheme.textColor.fixedOpacity(0.38),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Field Card  —  white container with shadow for chip selections
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _FieldCard extends StatelessWidget {
+  final String label;
+  final bool isRequired;
+  final BaseTheme baseTheme;
+  final Widget child;
+
+  const _FieldCard({
+    required this.label,
+    required this.isRequired,
+    required this.baseTheme,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: baseTheme.white,
+        borderRadius: BorderRadius.circular(AppConstants.radius16Px),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(AppConstants.gap16Px),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontFamily: AppConstants.fontFamilyLato,
+                  fontSize: AppConstants.font13Px,
+                  fontWeight: FontWeight.w600,
+                  color: baseTheme.textColor.fixedOpacity(0.5),
+                ),
+              ),
+              if (isRequired)
+                Text(
+                  ' *',
+                  style: TextStyle(
+                    fontFamily: AppConstants.fontFamilyLato,
+                    fontSize: AppConstants.font13Px,
+                    fontWeight: FontWeight.w700,
+                    color: baseTheme.primary,
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: AppConstants.gap12Px),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Action Button  —  animated enabled/disabled state (shared design system)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _ActionButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool isDisabled;
+  final BaseTheme baseTheme;
+  final VoidCallback? onPressed;
+
+  const _ActionButton({
+    required this.label,
+    required this.icon,
+    required this.isDisabled,
+    required this.baseTheme,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedOpacity(
+      opacity: isDisabled ? 0.5 : 1.0,
+      duration: const Duration(milliseconds: 200),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: onPressed,
+          icon: Icon(
+            icon,
+            size: 18,
+            color: isDisabled
+                ? baseTheme.textColor.fixedOpacity(0.5)
+                : baseTheme.white,
+          ),
+          label: Text(
+            label,
+            style: TextStyle(
+              fontFamily: AppConstants.fontFamilyLato,
+              fontSize: AppConstants.font16Px,
+              fontWeight: FontWeight.w700,
+              color: isDisabled
+                  ? baseTheme.textColor.fixedOpacity(0.5)
+                  : baseTheme.white,
+            ),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor:
+                isDisabled ? baseTheme.disable : baseTheme.primary,
+            foregroundColor:
+                isDisabled ? baseTheme.textColor : baseTheme.white,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppConstants.radius16Px),
+            ),
+            elevation: 0,
+            shadowColor: Colors.transparent,
+          ),
+        ),
       ),
     );
   }

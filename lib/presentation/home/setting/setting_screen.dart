@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../bloc/authentication_bloc/authentication_bloc.dart';
@@ -5,12 +6,9 @@ import '../../../bloc/authentication_bloc/authentication_events.dart';
 import '../../../bloc/authentication_bloc/authentication_states.dart';
 import '../../../bloc/language_bloc/language_bloc.dart';
 import '../../../bloc/language_bloc/language_events.dart';
-import '../../../bloc/language_bloc/language_states.dart';
 import '../../../bloc/theme_bloc/theme_bloc.dart';
-import '../../../bloc/theme_bloc/theme_events.dart';
 import '../../../bloc/theme_bloc/theme_states.dart';
 import '../../../config/app_router.dart';
-import '../../../config/config.dart';
 import '../../../config/named_router.dart';
 import '../../../config/theme/base.dart';
 import '../../../core/constants/app_constants.dart';
@@ -19,9 +17,11 @@ import '../../../core/extensions/color.dart';
 import '../../../data/managers/local/session_manager.dart';
 import '../../../data/models/user_model.dart';
 import '../../../injection_container.dart';
-import '../../../widgets/custom_button.dart';
-import '../../../widgets/custom_text.dart';
 import '../../../widgets/loading_overlay.dart';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Setting Screen
+// ─────────────────────────────────────────────────────────────────────────────
 
 class SettingScreen extends StatefulWidget {
   const SettingScreen({super.key});
@@ -47,11 +47,142 @@ class _SettingScreenState extends State<SettingScreen> {
     languageBloc.add(LoadLanguage());
   }
 
+  void _showLogoutDialog(BaseTheme baseTheme) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.4),
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Container(
+            decoration: BoxDecoration(
+              color: baseTheme.background,
+              borderRadius: BorderRadius.circular(AppConstants.radius20Px),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.12),
+                  blurRadius: 32,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Icon + title
+                Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.10),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.logout_rounded,
+                        color: Colors.orange.shade700,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Text(
+                      ViewConstants.logout.tr(),
+                      style: TextStyle(
+                        fontFamily: AppConstants.fontFamilyLato,
+                        fontSize: AppConstants.font18Px,
+                        fontWeight: FontWeight.w700,
+                        color: baseTheme.textColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Are you sure you want to sign out of your account?',
+                  style: TextStyle(
+                    fontFamily: AppConstants.fontFamilyLato,
+                    fontSize: AppConstants.font14Px,
+                    fontWeight: FontWeight.w400,
+                    color: baseTheme.textColor.fixedOpacity(0.55),
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    // Cancel
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppConstants.radius12Px,
+                            ),
+                          ),
+                          side: BorderSide(
+                            color: baseTheme.textColor.fixedOpacity(0.18),
+                          ),
+                        ),
+                        child: Text(
+                          ViewConstants.cancel.tr(),
+                          style: TextStyle(
+                            fontFamily: AppConstants.fontFamilyLato,
+                            fontSize: AppConstants.font14Px,
+                            fontWeight: FontWeight.w600,
+                            color: baseTheme.textColor.fixedOpacity(0.7),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Sign out
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          authenticationBloc.add(const SignOutEvent());
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFD32F2F),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppConstants.radius12Px,
+                            ),
+                          ),
+                          elevation: 0,
+                          shadowColor: Colors.transparent,
+                        ),
+                        child: Text(
+                          ViewConstants.logout.tr(),
+                          style: TextStyle(
+                            fontFamily: AppConstants.fontFamilyLato,
+                            fontSize: AppConstants.font14Px,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final baseTheme = themeBloc.state.baseTheme;
-    final settingsColors = baseTheme.settings;
-
     return BlocListener<AuthenticationBloc, AuthenticationState>(
       bloc: authenticationBloc,
       listener: (context, state) {
@@ -60,391 +191,566 @@ class _SettingScreenState extends State<SettingScreen> {
         } else if (state is AuthenticationError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.message),
+              content: Text(
+                state.message,
+                style: const TextStyle(color: Colors.white),
+              ),
               backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(AppConstants.radius12Px),
+              ),
             ),
           );
         } else if (state is AuthenticationAuthenticated) {
-          // Trigger rebuild when user is authenticated to refresh user data
           setState(() {});
         }
       },
       child: BlocBuilder<AuthenticationBloc, AuthenticationState>(
         bloc: authenticationBloc,
         builder: (context, authState) {
-          // Read user data inside BlocBuilder to get fresh data when state changes
           final user = sessionManager.getUser();
-          
-          return LoadingOverlay(
-            isLoading: authState is AuthenticationLoading,
-            overlayColor: baseTheme.background,
-            opacity: AppConstants.opacity20Px,
-            child: Scaffold(
-              backgroundColor: baseTheme.background,
-              appBar: AppBar(
-                title: CustomText(
-                  text: ViewConstants.setting,
-                  size: AppConstants.font22Px,
-                  weight: FontWeight.w700,
-                  letterSpacing: 0.5,
-                ),
-                backgroundColor: baseTheme.background,
-                elevation: 0,
-                centerTitle: false,
-                toolbarHeight: 60,
-              ),
-              body: SafeArea(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.all(AppConstants.gap20Px),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Profile Section
-                      _buildProfileSection(baseTheme, user),
-                      SizedBox(height: AppConstants.gap24Px),
 
-                      // Account Section
-                      _buildSectionTitle(baseTheme, ViewConstants.account),
-                      SizedBox(height: AppConstants.gap12Px),
-                      _buildSettingsCard(
-                        baseTheme,
-                        settingsColors,
+          return BlocBuilder<ThemeBloc, ThemeState>(
+            bloc: themeBloc,
+            builder: (context, themeState) {
+              final baseTheme = themeState.baseTheme;
+              final settingsColors = baseTheme.settings;
+
+              return LoadingOverlay(
+                isLoading: authState is AuthenticationLoading,
+                overlayColor: baseTheme.background,
+                opacity: AppConstants.opacity20Px,
+                child: Scaffold(
+                  backgroundColor: baseTheme.background,
+                  appBar: AppBar(
+                    backgroundColor: baseTheme.background,
+                    elevation: 0,
+                    scrolledUnderElevation: 0,
+                    title: Text(
+                      ViewConstants.setting.tr(),
+                      style: TextStyle(
+                        fontFamily: AppConstants.fontFamilyLato,
+                        fontSize: AppConstants.font20Px,
+                        fontWeight: FontWeight.w700,
+                        color: baseTheme.textColor,
+                      ),
+                    ),
+                  ),
+                  body: SafeArea(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildSettingsTile(
-                            baseTheme,
-                            settingsColors,
-                            icon: Icons.person_outline,
-                            title: ViewConstants.editProfile,
-                            onTap: () {
-                              AppRouter.pushNamed(context, RouteNames.editProfile);
-                            },
+                          // ── Profile hero ──────────────────────────────────
+                          _ProfileCard(
+                            user: user,
+                            baseTheme: baseTheme,
+                            onEditTap: () => AppRouter.pushNamed(
+                              context,
+                              RouteNames.editProfile,
+                            ),
                           ),
-                          _buildDivider(baseTheme),
-                          _buildSettingsTile(
-                            baseTheme,
-                            settingsColors,
-                            icon: Icons.bloodtype_outlined,
-                            title: ViewConstants.editOnboarding,
-                            onTap: () {
-                              AppRouter.pushNamed(context, RouteNames.editOnboarding);
-                            },
+
+                          const SizedBox(height: 28),
+
+                          // ── Account ───────────────────────────────────────
+                          _SectionLabel(
+                            label: ViewConstants.account,
+                            baseTheme: baseTheme,
                           ),
-                          _buildDivider(baseTheme),
-                          _buildSettingsTile(
-                            baseTheme,
-                            settingsColors,
-                            icon: Icons.lock_outline,
-                            title: ViewConstants.changePassword,
-                            onTap: () {
-                              // TODO: Navigate to change password screen
-                            },
+                          const SizedBox(height: 10),
+                          _SettingsGroup(
+                            baseTheme: baseTheme,
+                            children: [
+                              _SettingsTile(
+                                icon: Icons.person_rounded,
+                                title: ViewConstants.editProfile,
+                                baseTheme: baseTheme,
+                                settingsColors: settingsColors,
+                                onTap: () => AppRouter.pushNamed(
+                                  context,
+                                  RouteNames.editProfile,
+                                ),
+                              ),
+                              _TileDivider(baseTheme: baseTheme),
+                              _SettingsTile(
+                                icon: Icons.water_drop_rounded,
+                                title: ViewConstants.editOnboarding,
+                                baseTheme: baseTheme,
+                                settingsColors: settingsColors,
+                                onTap: () => AppRouter.pushNamed(
+                                  context,
+                                  RouteNames.editOnboarding,
+                                ),
+                              ),
+                              _TileDivider(baseTheme: baseTheme),
+                              _SettingsTile(
+                                icon: Icons.lock_rounded,
+                                title: ViewConstants.changePassword,
+                                baseTheme: baseTheme,
+                                settingsColors: settingsColors,
+                                onTap: () {},
+                              ),
+                            ],
                           ),
+
+                          const SizedBox(height: 28),
+
+                          // ── Preferences ───────────────────────────────────
+                          // _SectionLabel(
+                          //   label: 'Preferences',
+                          //   baseTheme: baseTheme,
+                          //   translate: false,
+                          // ),
+                          // const SizedBox(height: 10),
+                          // _SettingsGroup(
+                          //   baseTheme: baseTheme,
+                          //   children: [
+                          //     _SwitchTile(
+                          //       icon: Icons.notifications_rounded,
+                          //       title: 'Notifications',
+                          //       value: _notificationsEnabled,
+                          //       baseTheme: baseTheme,
+                          //       settingsColors: settingsColors,
+                          //       onChanged: (v) =>
+                          //           setState(() => _notificationsEnabled = v),
+                          //     ),
+                          //   ],
+                          // ),
+                          //
+                          // const SizedBox(height: 28),
+
+                          // ── About ─────────────────────────────────────────
+                          _SectionLabel(
+                            label: ViewConstants.about,
+                            baseTheme: baseTheme,
+                          ),
+                          const SizedBox(height: 10),
+                          _SettingsGroup(
+                            baseTheme: baseTheme,
+                            children: [
+                              _SettingsTile(
+                                icon: Icons.shield_rounded,
+                                title: ViewConstants.privacyPolicy,
+                                baseTheme: baseTheme,
+                                settingsColors: settingsColors,
+                                onTap: () {},
+                              ),
+                              _TileDivider(baseTheme: baseTheme),
+                              _SettingsTile(
+                                icon: Icons.description_rounded,
+                                title: ViewConstants.termsOfService,
+                                baseTheme: baseTheme,
+                                settingsColors: settingsColors,
+                                onTap: () {},
+                              ),
+                              _TileDivider(baseTheme: baseTheme),
+                              _SettingsTile(
+                                icon: Icons.help_rounded,
+                                title: ViewConstants.help,
+                                baseTheme: baseTheme,
+                                settingsColors: settingsColors,
+                                onTap: () {},
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 28),
+
+                          // ── Danger Zone ───────────────────────────────────
+                          _DangerGroup(
+                            children: [
+                              _DangerTile(
+                                icon: Icons.delete_rounded,
+                                title: ViewConstants.deleteAccount,
+                                baseTheme: baseTheme,
+                                onTap: () {},
+                              ),
+                              _TileDivider(
+                                baseTheme: baseTheme,
+                                color: Colors.red.withOpacity(0.08),
+                              ),
+                              _DangerTile(
+                                icon: Icons.logout_rounded,
+                                title: ViewConstants.logout,
+                                baseTheme: baseTheme,
+                                onTap: () => _showLogoutDialog(baseTheme),
+                              ),
+                            ],
+                          ),
+
                         ],
                       ),
-                      SizedBox(height: AppConstants.gap24Px),
-
-                      // Preferences Section
-                      _buildSectionTitle(baseTheme, ViewConstants.notifications),
-                      SizedBox(height: AppConstants.gap12Px),
-                      _buildSettingsCard(
-                        baseTheme,
-                        settingsColors,
-                        children: [
-                          _buildSwitchTile(
-                            baseTheme,
-                            settingsColors,
-                            icon: Icons.notifications_outlined,
-                            title: ViewConstants.enableNotifications,
-                            value: _notificationsEnabled,
-                            onChanged: (value) {
-                              setState(() {
-                                _notificationsEnabled = value;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: AppConstants.gap24Px),
-
-                      // More Section
-                      _buildSectionTitle(baseTheme, ViewConstants.about),
-                      SizedBox(height: AppConstants.gap12Px),
-                      _buildSettingsCard(
-                        baseTheme,
-                        settingsColors,
-                        children: [
-                          _buildSettingsTile(
-                            baseTheme,
-                            settingsColors,
-                            icon: Icons.privacy_tip_outlined,
-                            title: ViewConstants.privacyPolicy,
-                            onTap: () {
-                              // TODO: Open privacy policy
-                            },
-                          ),
-                          _buildDivider(baseTheme),
-                          _buildSettingsTile(
-                            baseTheme,
-                            settingsColors,
-                            icon: Icons.description_outlined,
-                            title: ViewConstants.termsOfService,
-                            onTap: () {
-                              // TODO: Open terms of service
-                            },
-                          ),
-                          _buildDivider(baseTheme),
-                          _buildSettingsTile(
-                            baseTheme,
-                            settingsColors,
-                            icon: Icons.help_outline,
-                            title: ViewConstants.help,
-                            onTap: () {
-                              // TODO: Navigate to help screen
-                            },
-                          ),
-                          _buildDivider(baseTheme),
-                          _buildSettingsTile(
-                            baseTheme,
-                            settingsColors,
-                            icon: Icons.email_outlined,
-                            title: ViewConstants.contactUs,
-                            onTap: () {
-                              // TODO: Open contact us
-                            },
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: AppConstants.gap40Px),
-
-                      _buildSettingsCard(
-                        baseTheme,
-                        settingsColors,
-                        children: [
-                          _buildSettingsTile(
-                            baseTheme,
-                            settingsColors,
-                            icon: Icons.delete_outline,
-                            title: ViewConstants.deleteAccount,
-                            onTap: () {
-                              // TODO: Open privacy policy
-                            },
-                          ),
-                          _buildDivider(baseTheme),
-                          _buildSettingsTile(
-                            baseTheme,
-                            settingsColors,
-                            icon: Icons.exit_to_app,
-                            title: ViewConstants.logout,
-                            onTap:_showLogoutDialog,
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: AppConstants.gap20Px),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
+              );
+            },
           );
         },
       ),
     );
   }
+}
 
-  Widget _buildProfileSection(BaseTheme baseTheme, UserModel? user) {
-    final initials = (user?.name != null && user!.name.isNotEmpty)
-        ? user.name.substring(0, 1).toUpperCase()
+// ─────────────────────────────────────────────────────────────────────────────
+// Profile Card  —  hero section
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _ProfileCard extends StatelessWidget {
+  final UserModel? user;
+  final BaseTheme baseTheme;
+  final VoidCallback onEditTap;
+
+  const _ProfileCard({
+    required this.user,
+    required this.baseTheme,
+    required this.onEditTap,
+  });
+
+  Color _bloodColor(String? bg) {
+    if (bg == null) return const Color(0xFFE53935);
+    final g = bg.toUpperCase();
+    if (g.startsWith('AB')) return const Color(0xFF8E24AA);
+    if (g.startsWith('A')) return const Color(0xFFFF6B35);
+    if (g.startsWith('B')) return const Color(0xFF2196F3);
+    return const Color(0xFFE53935);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final initial = (user?.name != null && user!.name.isNotEmpty)
+        ? user!.name[0].toUpperCase()
         : 'U';
+    final bloodColor = _bloodColor(user?.bloodGroup);
 
     return Container(
-      padding: EdgeInsets.all(AppConstants.gap24Px),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            baseTheme.primary.fixedOpacity(0.08),
-            baseTheme.primary.fixedOpacity(0.03),
+            baseTheme.primary.withOpacity(0.10),
+            baseTheme.primary.withOpacity(0.03),
           ],
         ),
         borderRadius: BorderRadius.circular(AppConstants.radius20Px),
         border: Border.all(
-          color: baseTheme.primary.fixedOpacity(0.15),
+          color: baseTheme.primary.withOpacity(0.12),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: baseTheme.primary.fixedOpacity(0.1),
-            blurRadius: 20,
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 16,
             offset: const Offset(0, 4),
-            spreadRadius: 0,
           ),
         ],
       ),
       child: Row(
         children: [
+          // Avatar
           Container(
-            width: 72,
-            height: 72,
+            width: 62,
+            height: 62,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
                   baseTheme.primary,
-                  baseTheme.primary.fixedOpacity(0.8),
+                  baseTheme.primary.withOpacity(0.72),
                 ],
               ),
               shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: baseTheme.primary.fixedOpacity(0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
             ),
-            child: Center(
-              child: CustomText(
-                text: initials,
-                size: AppConstants.font28Px,
-                weight: FontWeight.w700,
-                textColor: baseTheme.white,
-                translate: false,
+            alignment: Alignment.center,
+            child: Text(
+              initial,
+              style: TextStyle(
+                fontFamily: AppConstants.fontFamilyLato,
+                fontSize: AppConstants.font24Px,
+                fontWeight: FontWeight.w800,
+                color: baseTheme.white,
               ),
             ),
           ),
-          SizedBox(width: AppConstants.gap20Px),
+
+          const SizedBox(width: 16),
+
+          // Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CustomText(
-                  text: user?.name ?? 'User',
-                  size: AppConstants.font20Px,
-                  weight: FontWeight.w700,
-                  translate: false,
+                Text(
+                  user?.name ?? 'User',
+                  style: TextStyle(
+                    fontFamily: AppConstants.fontFamilyLato,
+                    fontSize: AppConstants.font18Px,
+                    fontWeight: FontWeight.w700,
+                    color: baseTheme.textColor,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: AppConstants.gap6Px),
-                CustomText(
-                  text: user?.email ?? '',
-                  size: AppConstants.font14Px,
-                  textColor: baseTheme.textColor.fixedOpacity(0.65),
-                  translate: false,
+                const SizedBox(height: 3),
+                Text(
+                  user?.email ?? '',
+                  style: TextStyle(
+                    fontFamily: AppConstants.fontFamilyLato,
+                    fontSize: AppConstants.font13Px,
+                    fontWeight: FontWeight.w400,
+                    color: baseTheme.textColor.fixedOpacity(0.5),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
+                if (user?.bloodGroup != null) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: bloodColor.withOpacity(0.10),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.water_drop_rounded,
+                          size: 11,
+                          color: bloodColor,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          user!.bloodGroup!,
+                          style: TextStyle(
+                            fontFamily: AppConstants.fontFamilyLato,
+                            fontSize: AppConstants.font12Px,
+                            fontWeight: FontWeight.w700,
+                            color: bloodColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
+            ),
+          ),
+
+          const SizedBox(width: 12),
+
+          // Edit button
+          GestureDetector(
+            onTap: onEditTap,
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: baseTheme.primary.withOpacity(0.10),
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.edit_rounded,
+                size: 16,
+                color: baseTheme.primary,
+              ),
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildSectionTitle(BaseTheme baseTheme, String title) {
+// ─────────────────────────────────────────────────────────────────────────────
+// Section Label  —  uppercase, muted, Stripe-style
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _SectionLabel extends StatelessWidget {
+  final String label;
+  final BaseTheme baseTheme;
+  final bool translate;
+  final bool isRed;
+
+  const _SectionLabel({
+    required this.label,
+    required this.baseTheme,
+    this.translate = true,
+    this.isRed = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final text = translate ? label.tr() : label;
     return Padding(
-      padding: EdgeInsets.only(left: AppConstants.gap4Px),
-      child: CustomText(
-        text: title,
-        size: AppConstants.font17Px,
-        weight: FontWeight.w700,
-        textColor: baseTheme.textColor.fixedOpacity(0.85),
-        letterSpacing: 0.3,
+      padding: const EdgeInsets.only(left: 4),
+      child: Text(
+        text.toUpperCase(),
+        style: TextStyle(
+          fontFamily: AppConstants.fontFamilyLato,
+          fontSize: AppConstants.font12Px,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.0,
+          color: isRed
+              ? Colors.red.shade400
+              : baseTheme.textColor.fixedOpacity(0.38),
+        ),
       ),
     );
   }
+}
 
-  Widget _buildSettingsCard(
-    BaseTheme baseTheme,
-    SettingsColors settingsColors, {
-    required List<Widget> children,
-  }) {
+// ─────────────────────────────────────────────────────────────────────────────
+// Settings Group  —  white card container (unified with app cards)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _SettingsGroup extends StatelessWidget {
+  final BaseTheme baseTheme;
+  final List<Widget> children;
+
+  const _SettingsGroup({
+    required this.baseTheme,
+    required this.children,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: baseTheme.white,
-        borderRadius: BorderRadius.circular(AppConstants.radius20Px),
+        borderRadius: BorderRadius.circular(AppConstants.radius16Px),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppConstants.radius16Px),
+        child: Column(children: children),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Danger Group  —  red-tinted container for destructive actions
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _DangerGroup extends StatelessWidget {
+  final List<Widget> children;
+
+  const _DangerGroup({required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.025),
+        borderRadius: BorderRadius.circular(AppConstants.radius16Px),
         border: Border.all(
-          color: baseTheme.textColor.fixedOpacity(0.08),
+          color: Colors.red.withOpacity(0.12),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: baseTheme.textColor.fixedOpacity(0.06),
-            blurRadius: 20,
+            color: Colors.red.withOpacity(0.04),
+            blurRadius: 16,
             offset: const Offset(0, 4),
-            spreadRadius: 0,
-          ),
-          BoxShadow(
-            color: baseTheme.textColor.fixedOpacity(0.02),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-            spreadRadius: 0,
           ),
         ],
       ),
-      child: Column(
-        children: children,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppConstants.radius16Px),
+        child: Column(children: children),
       ),
     );
   }
+}
 
-  Widget _buildSettingsTile(
-    BaseTheme baseTheme,
-    SettingsColors settingsColors, {
-    required IconData icon,
-    required String title,
-    Widget? trailing,
-    required VoidCallback onTap,
-    bool showArrow = true,
-  }) {
+// ─────────────────────────────────────────────────────────────────────────────
+// Settings Tile  —  standard tap tile
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _SettingsTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final BaseTheme baseTheme;
+  final SettingsColors settingsColors;
+  final VoidCallback onTap;
+  final Widget? trailing;
+  final bool showArrow;
+
+  const _SettingsTile({
+    required this.icon,
+    required this.title,
+    required this.baseTheme,
+    required this.settingsColors,
+    required this.onTap,
+    this.trailing,
+    this.showArrow = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppConstants.radius16Px),
-        splashColor: baseTheme.primary.fixedOpacity(0.1),
-        highlightColor: baseTheme.primary.fixedOpacity(0.05),
+        splashColor: baseTheme.primary.withOpacity(0.06),
+        highlightColor: baseTheme.primary.withOpacity(0.03),
         child: Padding(
-          padding: EdgeInsets.all(AppConstants.gap16Px,),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
+              // Icon container
               Container(
-                width: 44,
-                height: 44,
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
                   color: settingsColors.iconBackground,
-                  borderRadius: BorderRadius.circular(AppConstants.radius12Px),
-                  boxShadow: [
-                    BoxShadow(
-                      color: baseTheme.primary.fixedOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+                  borderRadius:
+                      BorderRadius.circular(AppConstants.radius10Px),
                 ),
-                child: Icon(
-                  icon,
-                  color: settingsColors.icon,
-                  size: 22,
-                ),
+                alignment: Alignment.center,
+                child: Icon(icon, size: 18, color: settingsColors.icon),
               ),
-              SizedBox(width: AppConstants.gap16Px),
+              const SizedBox(width: 14),
+
+              // Title
               Expanded(
-                child: CustomText(
-                  text: title,
-                  size: AppConstants.font16Px,
-                  weight: FontWeight.w600,
-                  textColor: settingsColors.tileTitle,
+                child: Text(
+                  title.tr(),
+                  style: TextStyle(
+                    fontFamily: AppConstants.fontFamilyLato,
+                    fontSize: AppConstants.font16Px,
+                    fontWeight: FontWeight.w500,
+                    color: settingsColors.tileTitle,
+                  ),
                 ),
               ),
+
               if (trailing != null) ...[
-                SizedBox(width: AppConstants.gap8Px),
-                trailing,
-              ],
-              if (showArrow && trailing == null)
+                const SizedBox(width: AppConstants.gap8Px),
+                trailing!,
+              ] else if (showArrow)
                 Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: baseTheme.textColor.fixedOpacity(0.4),
+                  Icons.chevron_right_rounded,
+                  size: 20,
+                  color: baseTheme.textColor.fixedOpacity(0.25),
                 ),
             ],
           ),
@@ -452,119 +758,158 @@ class _SettingScreenState extends State<SettingScreen> {
       ),
     );
   }
+}
 
-  Widget _buildSwitchTile(
-    BaseTheme baseTheme,
-    SettingsColors settingsColors, {
-    required IconData icon,
-    required String title,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
+// ─────────────────────────────────────────────────────────────────────────────
+// Switch Tile  —  tile with a toggle switch
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _SwitchTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final bool value;
+  final BaseTheme baseTheme;
+  final SettingsColors settingsColors;
+  final ValueChanged<bool> onChanged;
+
+  const _SwitchTile({
+    required this.icon,
+    required this.title,
+    required this.value,
+    required this.baseTheme,
+    required this.settingsColors,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppConstants.gap16Px,
-        vertical: AppConstants.gap18Px,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
               color: settingsColors.iconBackground,
-              borderRadius: BorderRadius.circular(AppConstants.radius12Px),
-              boxShadow: [
-                BoxShadow(
-                  color: baseTheme.primary.fixedOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              borderRadius: BorderRadius.circular(AppConstants.radius10Px),
             ),
-            child: Icon(
-              icon,
-              color: settingsColors.icon,
-              size: 22,
-            ),
+            alignment: Alignment.center,
+            child: Icon(icon, size: 18, color: settingsColors.icon),
           ),
-          SizedBox(width: AppConstants.gap16Px),
+          const SizedBox(width: 14),
           Expanded(
-            child: CustomText(
-              text: title,
-              size: AppConstants.font16Px,
-              weight: FontWeight.w600,
-              textColor: settingsColors.tileTitle,
+            child: Text(
+              title,
+              style: TextStyle(
+                fontFamily: AppConstants.fontFamilyLato,
+                fontSize: AppConstants.font16Px,
+                fontWeight: FontWeight.w500,
+                color: settingsColors.tileTitle,
+              ),
             ),
           ),
           Transform.scale(
-            scale: 0.9,
+            scale: 0.85,
             child: Switch(
               value: value,
               onChanged: onChanged,
               activeColor: baseTheme.primary,
-              thumbColor: MaterialStateProperty.all(settingsColors.switchThumb),
+              thumbColor:
+                  MaterialStateProperty.all(settingsColors.switchThumb),
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildDivider(BaseTheme baseTheme) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppConstants.gap16Px),
-      child: Divider(
-        height: 1,
-        thickness: 1,
-        color: baseTheme.textColor.fixedOpacity(0.08),
-        indent: 60,
+// ─────────────────────────────────────────────────────────────────────────────
+// Danger Tile  —  red-accented destructive tile
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _DangerTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final BaseTheme baseTheme;
+  final VoidCallback onTap;
+
+  const _DangerTile({
+    required this.icon,
+    required this.title,
+    required this.baseTheme,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const dangerColor = Color(0xFFC62828);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        splashColor: Colors.red.withOpacity(0.06),
+        highlightColor: Colors.red.withOpacity(0.03),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.08),
+                  borderRadius:
+                      BorderRadius.circular(AppConstants.radius10Px),
+                ),
+                alignment: Alignment.center,
+                child: Icon(icon, size: 18, color: dangerColor),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  title.tr(),
+                  style: const TextStyle(
+                    fontFamily: AppConstants.fontFamilyLato,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: dangerColor,
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 20,
+                color: Colors.red.withOpacity(0.30),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
+}
 
-  void _showLogoutDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: themeBloc.state.baseTheme.background,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppConstants.radius16Px),
-          ),
-          title: CustomText(
-            text: ViewConstants.logout,
-            weight: FontWeight.w700,
-            size: AppConstants.font20Px,
-          ),
-          content: CustomText(
-            text: 'Are you sure you want to logout?',
-            size: AppConstants.font16Px,
-            translate: false,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: CustomText(
-                text: 'Cancel',
-                textColor: themeBloc.state.baseTheme.textColor,
-                translate: false,
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                authenticationBloc.add(const SignOutEvent());
-              },
-              child: CustomText(
-                text: ViewConstants.logout,
-                textColor: themeBloc.state.baseTheme.primary,
-                weight: FontWeight.w700,
-              ),
-            ),
-          ],
-        );
-      },
+// ─────────────────────────────────────────────────────────────────────────────
+// Tile Divider  —  indented separator between tiles
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _TileDivider extends StatelessWidget {
+  final BaseTheme baseTheme;
+  final Color? color;
+
+  const _TileDivider({required this.baseTheme, this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Divider(
+      height: 1,
+      thickness: 1,
+      indent: 66,
+      endIndent: 0,
+      color: color ?? baseTheme.textColor.fixedOpacity(0.05),
     );
   }
 }

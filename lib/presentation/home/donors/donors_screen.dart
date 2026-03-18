@@ -6,6 +6,7 @@ import '../../../bloc/donor_bloc/donor_bloc.dart';
 import '../../../bloc/donor_bloc/donor_events.dart';
 import '../../../bloc/donor_bloc/donor_states.dart';
 import '../../../bloc/theme_bloc/theme_bloc.dart';
+import '../../../bloc/theme_bloc/theme_states.dart';
 import '../../../config/theme/base.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/view_constants.dart';
@@ -13,9 +14,12 @@ import '../../../core/extensions/color.dart';
 import '../../../data/managers/remote/supabase_service.dart';
 import '../../../data/models/user_model.dart';
 import '../../../injection_container.dart';
-import '../../../widgets/custom_text.dart';
 import '../../../widgets/custom_text_field.dart';
 import '../../../widgets/skeleton/donor_card_skeleton.dart';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Donors Screen
+// ─────────────────────────────────────────────────────────────────────────────
 
 class DonorsScreen extends StatefulWidget {
   const DonorsScreen({super.key});
@@ -26,8 +30,6 @@ class DonorsScreen extends StatefulWidget {
 
 class _DonorsScreenState extends State<DonorsScreen> {
   late final DonorBloc _bloc;
-  late final ThemeBloc _themeBloc;
-
   final TextEditingController _searchController = TextEditingController();
 
   List<UserModel> _allDonors = [];
@@ -37,7 +39,6 @@ class _DonorsScreenState extends State<DonorsScreen> {
   @override
   void initState() {
     super.initState();
-    _themeBloc = sl<ThemeBloc>();
     _bloc = DonorBloc(sl<SupabaseService>());
     _searchController.addListener(_onSearchChanged);
     _bloc.add(const GetDonorsEvent());
@@ -81,8 +82,6 @@ class _DonorsScreenState extends State<DonorsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final baseTheme = _themeBloc.state.baseTheme;
-
     return BlocConsumer<DonorBloc, DonorState>(
       bloc: _bloc,
       listener: (context, state) {
@@ -99,185 +98,247 @@ class _DonorsScreenState extends State<DonorsScreen> {
           setState(() => _isLoading = false);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: CustomText(
-                text: state.message,
-                textColor: Colors.white,
-                translate: false,
+              content: Text(
+                state.message,
+                style: const TextStyle(color: Colors.white),
               ),
               backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(AppConstants.radius12Px),
+              ),
             ),
           );
         }
       },
       builder: (context, state) {
-        final isInitialLoad = _isLoading && _allDonors.isEmpty;
+        return BlocBuilder<ThemeBloc, ThemeState>(
+          builder: (context, themeState) {
+            final baseTheme = themeState.baseTheme;
+            final isInitialLoad = _isLoading && _allDonors.isEmpty;
 
-    return Scaffold(
-          backgroundColor: baseTheme.background,
-      appBar: AppBar(
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CustomText(
-          text: ViewConstants.donors,
-          size: AppConstants.font20Px,
-                  weight: FontWeight.w700,
-                ),
-                if (!isInitialLoad && _allDonors.isNotEmpty)
-                  CustomText(
-                    text:
-                        '${_filteredDonors.length} ${ViewConstants.availableDonors.tr()}',
-                    size: AppConstants.font12Px,
-                    weight: FontWeight.w400,
-                    textColor: baseTheme.primary,
-                    translate: false,
-                  ),
-              ],
-        ),
-        backgroundColor: baseTheme.background,
-        elevation: 0,
-      ),
-          body: Column(
-            children: [
-              // ── Search Bar ──────────────────────────────────────────────
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  AppConstants.gap16Px,
-                  AppConstants.gap8Px,
-                  AppConstants.gap16Px,
-                  AppConstants.gap12Px,
-                ),
-                child: CustomTextField(
-                  hintText: ViewConstants.searchDonors,
-                  controller: _searchController,
-                  prefixIcon: Icon(Icons.search, color: baseTheme.primary),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: Icon(
-                            Icons.clear,
-                            color: baseTheme.textColor.fixedOpacity(0.5),
-                          ),
-                          onPressed: () => _searchController.clear(),
-                        )
-                      : null,
-                ),
-              ),
-
-              // ── List ────────────────────────────────────────────────────
-              Expanded(
-                child: isInitialLoad
-                    ? ListView.builder(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppConstants.gap16Px,
+            return Scaffold(
+              backgroundColor: baseTheme.background,
+              appBar: AppBar(
+                backgroundColor: baseTheme.background,
+                elevation: 0,
+                scrolledUnderElevation: 0,
+                title: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      ViewConstants.donors.tr(),
+                      style: TextStyle(
+                        fontFamily: AppConstants.fontFamilyLato,
+                        fontSize: AppConstants.font20Px,
+                        fontWeight: FontWeight.w700,
+                        color: baseTheme.textColor,
+                      ),
+                    ),
+                    if (!isInitialLoad && _allDonors.isNotEmpty)
+                      Text(
+                        '${_filteredDonors.length} '
+                        '${ViewConstants.availableDonors.tr()}',
+                        style: TextStyle(
+                          fontFamily: AppConstants.fontFamilyLato,
+                          fontSize: AppConstants.font12Px,
+                          fontWeight: FontWeight.w400,
+                          color: baseTheme.textColor.fixedOpacity(0.4),
                         ),
-                        itemCount: 5,
-                        itemBuilder: (_, __) => const DonorCardSkeleton(),
-                      )
-                    : _filteredDonors.isEmpty
-                        ? _buildEmptyState(baseTheme)
-                        : RefreshIndicator(
-                            onRefresh: () async =>
-                                _bloc.add(const GetDonorsEvent()),
-                            child: Stack(
-                              children: [
-                                ListView.builder(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: AppConstants.gap16Px,
-                                    vertical: AppConstants.gap4Px,
-                                  ),
-                                  itemCount: _filteredDonors.length,
-                                  itemBuilder: (context, index) => _DonorCard(
-                                    donor: _filteredDonors[index],
-                                    onCall: () => _launchCall(
-                                        _filteredDonors[index].phone),
-                                    onMessage: () => _launchSms(
-                                        _filteredDonors[index].phone),
-                                  ),
-                                ),
-                                if (_isLoading && !isInitialLoad)
-                                  Positioned(
-                                    top: 0,
-                                    left: 0,
-                                    right: 0,
-                                    child: SizedBox(
-                                      height: 3,
-                                      child: LinearProgressIndicator(
-                                        backgroundColor: Colors.transparent,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                                baseTheme.primary),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
+                      ),
+                  ],
+                ),
               ),
-            ],
-          ),
+              body: Column(
+                children: [
+                  // ── Search Bar ──────────────────────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                    child: CustomTextField(
+                      hintText: ViewConstants.searchDonors,
+                      controller: _searchController,
+                      prefixIcon: Icon(
+                        Icons.search_rounded,
+                        color: baseTheme.primary,
+                      ),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: Icon(
+                                Icons.clear_rounded,
+                                color: baseTheme.textColor.fixedOpacity(0.5),
+                              ),
+                              onPressed: () => _searchController.clear(),
+                            )
+                          : null,
+                    ),
+                  ),
+
+                  // ── Content ─────────────────────────────────────────────
+                  Expanded(
+                    child: isInitialLoad
+                        ? _buildSkeletonList(baseTheme)
+                        : _filteredDonors.isEmpty
+                            ? _buildEmptyState(baseTheme)
+                            : _buildList(baseTheme),
+                  ),
+                ],
+              ),
+            );
+          },
         );
       },
+    );
+  }
+
+  Widget _buildSkeletonList(BaseTheme baseTheme) {
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 80),
+      itemCount: 5,
+      itemBuilder: (_, __) => DonorCardSkeleton(baseTheme: baseTheme),
+    );
+  }
+
+  Widget _buildList(BaseTheme baseTheme) {
+    return RefreshIndicator(
+      color: baseTheme.primary,
+      onRefresh: () async => _bloc.add(const GetDonorsEvent()),
+      child: Stack(
+        children: [
+          ListView.builder(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 80),
+            itemCount: _filteredDonors.length,
+            itemBuilder: (context, index) => _AnimatedListItem(
+              index: index,
+              child: _DonorCard(
+                donor: _filteredDonors[index],
+                baseTheme: baseTheme,
+                onCall: () => _launchCall(_filteredDonors[index].phone),
+                onMessage: () => _launchSms(_filteredDonors[index].phone),
+              ),
+            ),
+          ),
+          if (_isLoading && _allDonors.isNotEmpty)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: SizedBox(
+                height: 3,
+                child: LinearProgressIndicator(
+                  backgroundColor: Colors.transparent,
+                  valueColor: AlwaysStoppedAnimation(baseTheme.primary),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
   Widget _buildEmptyState(BaseTheme baseTheme) {
     final isSearching = _searchController.text.isNotEmpty;
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              color: baseTheme.primary.withOpacity(0.08),
-              shape: BoxShape.circle,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 96,
+              height: 96,
+              decoration: BoxDecoration(
+                color: baseTheme.primary.withOpacity(0.08),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                isSearching
+                    ? Icons.search_off_rounded
+                    : Icons.people_outline_rounded,
+                size: 44,
+                color: baseTheme.primary.withOpacity(0.5),
+              ),
             ),
-            child: Icon(
-              isSearching ? Icons.search_off_rounded : Icons.people_outline,
-              size: 48,
-              color: baseTheme.primary.fixedOpacity(0.5),
+            const SizedBox(height: 24),
+            Text(
+              isSearching
+                  ? ViewConstants.noDonorsFound.tr()
+                  : ViewConstants.noDonorsAvailable.tr(),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: AppConstants.fontFamilyLato,
+                fontSize: AppConstants.font18Px,
+                fontWeight: FontWeight.w700,
+                color: baseTheme.textColor,
+              ),
             ),
-          ),
-          const SizedBox(height: AppConstants.gap20Px),
-          CustomText(
-            text: isSearching
-                ? ViewConstants.noDonorsFound
-                : ViewConstants.noDonorsAvailable,
-            size: AppConstants.font18Px,
-            weight: FontWeight.w700,
-            textColor: baseTheme.textColor,
-          ),
-          const SizedBox(height: AppConstants.gap8Px),
-          CustomText(
-            text: isSearching
-                ? 'Try a different name, blood group or phone'
-                : 'Donors who complete their profile will appear here',
-            size: AppConstants.font14Px,
-            weight: FontWeight.w400,
-            textColor: baseTheme.textColor.fixedOpacity(0.5),
-            align: TextAlign.center,
-            translate: false,
-          ),
-        ],
+            const SizedBox(height: AppConstants.gap8Px),
+            Text(
+              isSearching
+                  ? 'Try a different name, blood group or phone'
+                  : 'Donors who complete their profile will appear here',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: AppConstants.fontFamilyLato,
+                fontSize: AppConstants.font14Px,
+                fontWeight: FontWeight.w400,
+                color: baseTheme.textColor.fixedOpacity(0.5),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Animated List Item
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _AnimatedListItem extends StatelessWidget {
+  final int index;
+  final Widget child;
+
+  const _AnimatedListItem({required this.index, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      duration: Duration(milliseconds: 250 + (index * 40).clamp(0, 300)),
+      tween: Tween(begin: 0.0, end: 1.0),
+      curve: Curves.easeOut,
+      builder: (context, value, child) => Opacity(
+        opacity: value,
+        child: Transform.translate(
+          offset: Offset(0, 12 * (1 - value)),
+          child: child,
+        ),
+      ),
+      child: child,
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Donor Card
+// ─────────────────────────────────────────────────────────────────────────────
+
 class _DonorCard extends StatelessWidget {
   final UserModel donor;
+  final BaseTheme baseTheme;
   final VoidCallback onCall;
   final VoidCallback onMessage;
 
   const _DonorCard({
     required this.donor,
+    required this.baseTheme,
     required this.onCall,
     required this.onMessage,
   });
 
-  Color _bloodGroupColor(String? bg) {
-    switch (bg) {
+  Color get _bloodColor {
+    switch (donor.bloodGroup?.toUpperCase()) {
       case 'A+':
       case 'A-':
         return const Color(0xFFFF6B35);
@@ -295,11 +356,7 @@ class _DonorCard extends StatelessWidget {
     }
   }
 
-  String _formatLastDonation(DateTime date) {
-    return DateFormat('MMM dd, yyyy').format(date);
-  }
-
-  String? _buildSubtitle(UserModel donor) {
+  String? get _subtitle {
     final parts = <String>[];
     if (donor.gender != null && donor.gender!.isNotEmpty) {
       parts.add(donor.gender!);
@@ -312,224 +369,192 @@ class _DonorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final baseTheme = sl<ThemeBloc>().state.baseTheme;
-    final bloodColor = _bloodGroupColor(donor.bloodGroup);
-    final initial = donor.name.isNotEmpty ? donor.name[0].toUpperCase() : '?';
-    final subtitle = _buildSubtitle(donor);
+    final bloodColor = _bloodColor;
+    final initial =
+        donor.name.isNotEmpty ? donor.name[0].toUpperCase() : '?';
+    final subtitle = _subtitle;
 
     return Container(
-      margin: EdgeInsets.only(bottom: AppConstants.gap14Px),
+      margin: const EdgeInsets.only(bottom: AppConstants.gap12Px),
       decoration: BoxDecoration(
         color: baseTheme.white,
         borderRadius: BorderRadius.circular(AppConstants.radius16Px),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.07),
-            blurRadius: 12,
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 16,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppConstants.radius16Px),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // ── Colored left accent bar ──────────────────────────────
-              Container(
-                width: 5,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [bloodColor, bloodColor.withOpacity(0.5)],
+      child: Padding(
+        padding: const EdgeInsets.all(AppConstants.gap16Px),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Header: avatar + name/subtitle + blood group badge ───────
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Avatar circle
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        bloodColor.withOpacity(0.18),
+                        bloodColor.withOpacity(0.07),
+                      ],
+                    ),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: bloodColor.withOpacity(0.25),
+                      width: 1.5,
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    initial,
+                    style: TextStyle(
+                      fontFamily: AppConstants.fontFamilyLato,
+                      fontSize: AppConstants.font20Px,
+                      fontWeight: FontWeight.w800,
+                      color: bloodColor,
+                    ),
                   ),
                 ),
-              ),
+                const SizedBox(width: AppConstants.gap12Px),
 
-              // ── Card content ─────────────────────────────────────────
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.all(AppConstants.gap16Px),
+                // Name + subtitle
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ── Top: avatar + info ───────────────────────────
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Avatar with blood group badge
-                          Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              Container(
-                                width: 60,
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [
-                                      bloodColor.withOpacity(0.2),
-                                      bloodColor.withOpacity(0.08),
-                                    ],
-                                  ),
-                                  shape: BoxShape.circle,
-                                  border:
-                                      Border.all(color: bloodColor, width: 2),
-                                ),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  initial,
-                                  style: TextStyle(
-                                    fontSize: AppConstants.font22Px,
-                                    fontWeight: FontWeight.w800,
-                                    color: bloodColor,
-                                    fontFamily: AppConstants.fontFamilyLato,
-                                  ),
-                                ),
-                              ),
-                              // Blood group badge
-                              if (donor.bloodGroup != null)
-                                Positioned(
-                                  bottom: -4,
-                                  right: -6,
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: AppConstants.gap6Px,
-                                      vertical: AppConstants.gap2Px,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: bloodColor,
-                                      borderRadius: BorderRadius.circular(
-                                          AppConstants.radius8Px),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: bloodColor.withOpacity(0.4),
-                                          blurRadius: 6,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Text(
-                                      donor.bloodGroup!,
-                                      style: TextStyle(
-                                        fontSize: AppConstants.font10Px,
-                                        fontWeight: FontWeight.w800,
-                                        color: Colors.white,
-                                        fontFamily: AppConstants.fontFamilyLato,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-
-                          const SizedBox(width: AppConstants.gap14Px),
-
-                          // Name, gender/age, location
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                CustomText(
-                                  text: donor.name,
-                                  size: AppConstants.font18Px,
-                                  weight: FontWeight.w700,
-                                  textColor: baseTheme.textColor,
-                                  translate: false,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: AppConstants.gap4Px),
-                                if (subtitle != null) ...[
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.person_outline,
-                                        size: 13,
-                                        color: baseTheme.textColor
-                                            .fixedOpacity(0.5),
-                                      ),
-                                      const SizedBox(
-                                          width: AppConstants.gap4Px),
-                                      Expanded(
-                                        child: CustomText(
-                                          text: subtitle,
-                                          size: AppConstants.font13Px,
-                                          weight: FontWeight.w500,
-                                          textColor: baseTheme.textColor
-                                              .fixedOpacity(0.6),
-                                          translate: false,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: AppConstants.gap4Px),
-                                ],
-                                if (donor.address != null &&
-                                    donor.address!.isNotEmpty) ...[
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.location_on_outlined,
-                                        size: 13,
-                                        color: baseTheme.textColor
-                                            .fixedOpacity(0.5),
-                                      ),
-                                      const SizedBox(
-                                          width: AppConstants.gap4Px),
-                                      Expanded(
-                                        child: CustomText(
-                                          text: donor.address!,
-                                          size: AppConstants.font12Px,
-                                          weight: FontWeight.w400,
-                                          textColor: baseTheme.textColor
-                                              .fixedOpacity(0.55),
-                                          translate: false,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ],
+                      const SizedBox(height: 2),
+                      Text(
+                        donor.name,
+                        style: TextStyle(
+                          fontFamily: AppConstants.fontFamilyLato,
+                          fontSize: AppConstants.font16Px,
+                          fontWeight: FontWeight.w700,
+                          color: baseTheme.textColor,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      SizedBox(height: 10,),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _ActionButton(
-                              icon: Icons.call_rounded,
-                              label: ViewConstants.call,
-                              color: Colors.green,
-                              onTap: onCall,
-                            ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 3),
+                        Text(
+                          subtitle,
+                          style: TextStyle(
+                            fontFamily: AppConstants.fontFamilyLato,
+                            fontSize: AppConstants.font13Px,
+                            fontWeight: FontWeight.w500,
+                            color: baseTheme.textColor.fixedOpacity(0.5),
                           ),
-                          const SizedBox(width: AppConstants.gap10Px),
-                          Expanded(
-                            child: _ActionButton(
-                              icon: Icons.message_rounded,
-                              label: ViewConstants.message,
-                              color: const Color(0xFF2196F3),
-                              onTap: onMessage,
-                            ),
-                          ),
-                        ],
-                      ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ],
                   ),
                 ),
-              ),
-            ],
-          ),
+                const SizedBox(width: AppConstants.gap8Px),
+
+                // Blood group badge — mirrors status badge in request cards
+                if (donor.bloodGroup != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: bloodColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      donor.bloodGroup!,
+                      style: TextStyle(
+                        fontFamily: AppConstants.fontFamilyLato,
+                        fontSize: AppConstants.font12Px,
+                        fontWeight: FontWeight.w700,
+                        color: bloodColor,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+
+            const SizedBox(height: AppConstants.gap14Px),
+
+            // ── Divider ──────────────────────────────────────────────────
+            Divider(
+              height: 1,
+              thickness: 1,
+              color: baseTheme.textColor.fixedOpacity(0.06),
+            ),
+
+            const SizedBox(height: AppConstants.gap12Px),
+
+            // ── Meta info ─────────────────────────────────────────────────
+            Wrap(
+              spacing: AppConstants.gap16Px,
+              runSpacing: AppConstants.gap6Px,
+              children: [
+                if (donor.address != null && donor.address!.isNotEmpty)
+                  _MetaInfo(
+                    icon: Icons.location_on_rounded,
+                    text: donor.address!,
+                    iconColor: baseTheme.textColor.fixedOpacity(0.45),
+                    baseTheme: baseTheme,
+                    maxWidth: 160,
+                  ),
+                _MetaInfo(
+                  icon: Icons.phone_rounded,
+                  text: donor.phone,
+                  iconColor: baseTheme.textColor.fixedOpacity(0.45),
+                  baseTheme: baseTheme,
+                ),
+              ],
+            ),
+
+            const SizedBox(height: AppConstants.gap14Px),
+
+            // ── Divider ──────────────────────────────────────────────────
+            Divider(
+              height: 1,
+              thickness: 1,
+              color: baseTheme.textColor.fixedOpacity(0.06),
+            ),
+
+            const SizedBox(height: AppConstants.gap14Px),
+
+            // ── Action buttons ────────────────────────────────────────────
+            Row(
+              children: [
+                Expanded(
+                  child: _ActionButton(
+                    icon: Icons.call_rounded,
+                    label: ViewConstants.call,
+                    color: const Color(0xFF2E7D32),
+                    onTap: onCall,
+                  ),
+                ),
+                const SizedBox(width: AppConstants.gap10Px),
+                Expanded(
+                  child: _ActionButton(
+                    icon: Icons.message_rounded,
+                    label: ViewConstants.message,
+                    color: const Color(0xFF1565C0),
+                    onTap: onMessage,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -537,45 +562,41 @@ class _DonorCard extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Info Row
+// Meta Info  —  mirrors _MetaInfo in HomeScreen & BloodRequestScreen
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _InfoRow extends StatelessWidget {
+class _MetaInfo extends StatelessWidget {
   final IconData icon;
-  final Color iconColor;
   final String text;
-  final double textOpacity;
+  final Color iconColor;
   final BaseTheme baseTheme;
+  final double? maxWidth;
 
-  const _InfoRow({
+  const _MetaInfo({
     required this.icon,
-    required this.iconColor,
     required this.text,
+    required this.iconColor,
     required this.baseTheme,
-    this.textOpacity = 0.8,
+    this.maxWidth,
   });
 
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: 28,
-          height: 28,
-          decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(AppConstants.radius8Px),
-          ),
-          child: Icon(icon, size: 15, color: iconColor),
-        ),
-        const SizedBox(width: AppConstants.gap10Px),
-        Expanded(
-          child: CustomText(
-            text: text,
-            size: AppConstants.font13Px,
-            weight: FontWeight.w500,
-            textColor: baseTheme.textColor.fixedOpacity(textOpacity),
-            translate: false,
+        Icon(icon, size: 13, color: iconColor),
+        const SizedBox(width: 4),
+        ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxWidth ?? 200),
+          child: Text(
+            text,
+            style: TextStyle(
+              fontFamily: AppConstants.fontFamilyLato,
+              fontSize: AppConstants.font12Px,
+              fontWeight: FontWeight.w500,
+              color: baseTheme.textColor.fixedOpacity(0.6),
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -586,7 +607,7 @@ class _InfoRow extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Action Button (Call / Message)
+// Action Button  (Call / Message)
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _ActionButton extends StatelessWidget {
@@ -605,27 +626,28 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: color.withOpacity(0.1),
-      borderRadius: BorderRadius.circular(AppConstants.radius10Px),
+      color: color.withOpacity(0.08),
+      borderRadius: BorderRadius.circular(AppConstants.radius12Px),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppConstants.radius10Px),
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: AppConstants.gap10Px),
-          decoration: BoxDecoration(
-            border: Border.all(color: color.withOpacity(0.3)),
-            borderRadius: BorderRadius.circular(AppConstants.radius10Px),
-          ),
+        borderRadius: BorderRadius.circular(AppConstants.radius12Px),
+        splashColor: color.withOpacity(0.16),
+        highlightColor: color.withOpacity(0.06),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 11),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 17, color: color),
+              Icon(icon, size: 16, color: color),
               const SizedBox(width: AppConstants.gap6Px),
-              CustomText(
-                text: label,
-                size: AppConstants.font13Px,
-                weight: FontWeight.w700,
-                textColor: color,
+              Text(
+                label.tr(),
+                style: TextStyle(
+                  fontFamily: AppConstants.fontFamilyLato,
+                  fontSize: AppConstants.font13Px,
+                  fontWeight: FontWeight.w700,
+                  color: color,
+                ),
               ),
             ],
           ),
