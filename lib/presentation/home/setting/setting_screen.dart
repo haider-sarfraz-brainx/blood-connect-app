@@ -19,10 +19,6 @@ import '../../../data/models/user_model.dart';
 import '../../../injection_container.dart';
 import '../../../widgets/loading_overlay.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Setting Screen
-// ─────────────────────────────────────────────────────────────────────────────
-
 class SettingScreen extends StatefulWidget {
   const SettingScreen({super.key});
 
@@ -72,7 +68,7 @@ class _SettingScreenState extends State<SettingScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Icon + title
+                
                 Row(
                   children: [
                     Container(
@@ -114,7 +110,7 @@ class _SettingScreenState extends State<SettingScreen> {
                 const SizedBox(height: 24),
                 Row(
                   children: [
-                    // Cancel
+                    
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => Navigator.pop(context),
@@ -141,7 +137,7 @@ class _SettingScreenState extends State<SettingScreen> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    // Sign out
+                    
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
@@ -244,7 +240,7 @@ class _SettingScreenState extends State<SettingScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // ── Profile hero ──────────────────────────────────
+                          
                           _ProfileCard(
                             user: user,
                             baseTheme: baseTheme,
@@ -256,7 +252,6 @@ class _SettingScreenState extends State<SettingScreen> {
 
                           const SizedBox(height: 28),
 
-                          // ── Account ───────────────────────────────────────
                           _SectionLabel(
                             label: ViewConstants.account,
                             baseTheme: baseTheme,
@@ -299,31 +294,22 @@ class _SettingScreenState extends State<SettingScreen> {
 
                           const SizedBox(height: 28),
 
-                          // ── Preferences ───────────────────────────────────
-                          // _SectionLabel(
-                          //   label: 'Preferences',
-                          //   baseTheme: baseTheme,
-                          //   translate: false,
-                          // ),
-                          // const SizedBox(height: 10),
-                          // _SettingsGroup(
-                          //   baseTheme: baseTheme,
-                          //   children: [
-                          //     _SwitchTile(
-                          //       icon: Icons.notifications_rounded,
-                          //       title: 'Notifications',
-                          //       value: _notificationsEnabled,
-                          //       baseTheme: baseTheme,
-                          //       settingsColors: settingsColors,
-                          //       onChanged: (v) =>
-                          //           setState(() => _notificationsEnabled = v),
-                          //     ),
-                          //   ],
-                          // ),
-                          //
-                          // const SizedBox(height: 28),
+                          
 
-                          // ── About ─────────────────────────────────────────
+                          
+
+                          
+
+                          
+
+                          
+
+                          
+
+                          
+
+                          
+
                           _SectionLabel(
                             label: ViewConstants.about,
                             baseTheme: baseTheme,
@@ -360,7 +346,6 @@ class _SettingScreenState extends State<SettingScreen> {
 
                           const SizedBox(height: 28),
 
-                          // ── Danger Zone ───────────────────────────────────
                           _DangerGroup(
                             children: [
                               _DangerTile(
@@ -395,10 +380,6 @@ class _SettingScreenState extends State<SettingScreen> {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Profile Card  —  hero section
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _ProfileCard extends StatelessWidget {
   final UserModel? user;
@@ -453,7 +434,7 @@ class _ProfileCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Avatar
+          
           Container(
             width: 62,
             height: 62,
@@ -482,7 +463,6 @@ class _ProfileCard extends StatelessWidget {
 
           const SizedBox(width: 16),
 
-          // Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -549,7 +529,6 @@ class _ProfileCard extends StatelessWidget {
 
           const SizedBox(width: 12),
 
-          // Edit button
           GestureDetector(
             onTap: onEditTap,
             child: Container(
@@ -572,10 +551,6 @@ class _ProfileCard extends StatelessWidget {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Section Label  —  uppercase, muted, Stripe-style
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _SectionLabel extends StatelessWidget {
   final String label;
@@ -611,10 +586,6 @@ class _SectionLabel extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Settings Group  —  white card container (unified with app cards)
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _SettingsGroup extends StatelessWidget {
   final BaseTheme baseTheme;
   final List<Widget> children;
@@ -645,10 +616,6 @@ class _SettingsGroup extends StatelessWidget {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Danger Group  —  red-tinted container for destructive actions
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _DangerGroup extends StatelessWidget {
   final List<Widget> children;
@@ -681,10 +648,6 @@ class _DangerGroup extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Settings Tile  —  standard tap tile
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _SettingsTile extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -716,7 +679,7 @@ class _SettingsTile extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
-              // Icon container
+              
               Container(
                 width: 36,
                 height: 36,
@@ -730,7 +693,6 @@ class _SettingsTile extends StatelessWidget {
               ),
               const SizedBox(width: 14),
 
-              // Title
               Expanded(
                 child: Text(
                   title.tr(),
@@ -759,10 +721,6 @@ class _SettingsTile extends StatelessWidget {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Switch Tile  —  tile with a toggle switch
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _SwitchTile extends StatelessWidget {
   final IconData icon;
@@ -824,10 +782,6 @@ class _SwitchTile extends StatelessWidget {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Danger Tile  —  red-accented destructive tile
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _DangerTile extends StatelessWidget {
   final IconData icon;
@@ -891,10 +845,6 @@ class _DangerTile extends StatelessWidget {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Tile Divider  —  indented separator between tiles
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _TileDivider extends StatelessWidget {
   final BaseTheme baseTheme;

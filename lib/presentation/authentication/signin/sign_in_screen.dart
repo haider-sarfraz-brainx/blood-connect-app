@@ -78,7 +78,7 @@ class _SignInScreenState extends State<SignInScreen> with ValidationMixin {
       bloc: authenticationBloc,
       listener: (context, state) {
         if (state is AuthenticationAuthenticated) {
-          // Check if onboarding is completed using userModel from state or session
+          
           final user = state.userModel ?? sessionManager.getUser();
           if (user != null && user.isOnboardingCompleted) {
             AppRouter.pushNamedAndRemoveUntil(context, RouteNames.bottomNavbar);
@@ -172,7 +172,7 @@ class _SignInScreenState extends State<SignInScreen> with ValidationMixin {
                 alignment: AlignmentGeometry.centerRight,
                 child: GestureDetector(
                   onTap: () {
-                    // Navigate to forgot password screen
+                    
                   },
                   child: CustomText(
                     text: ViewConstants.forgotPassword,

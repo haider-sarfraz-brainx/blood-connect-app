@@ -22,10 +22,6 @@ import '../../../widgets/custom_text.dart';
 import '../../../widgets/custom_text_field.dart';
 import '../../../widgets/loading_overlay.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Onboarding Screen
-// ─────────────────────────────────────────────────────────────────────────────
-
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -34,13 +30,12 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  // ── Form & controllers ────────────────────────────────────────────────────
+  
   final _formKey = GlobalKey<FormState>();
   final _addressController = TextEditingController();
   final _emergencyContactNameController = TextEditingController();
   final _emergencyContactPhoneController = TextEditingController();
 
-  // ── State (unchanged) ─────────────────────────────────────────────────────
   String? _selectedBloodGroup;
   DateTime? _selectedDateOfBirth;
   DateTime? _selectedLastDonationDate;
@@ -55,8 +50,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   bool completeProfileButtonDisable = true;
   late StateSetter completeProfileButtonStateSetter;
-
-  // ── Lifecycle ─────────────────────────────────────────────────────────────
 
   @override
   void initState() {
@@ -92,8 +85,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
-  // ── Date pickers (unchanged) ──────────────────────────────────────────────
-
   Future<void> _selectDateOfBirth() async {
     final DateTime? picked = await CupertinoDatePickerBottomSheet.show(
       context: context,
@@ -124,8 +115,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
-  // ── Chip callbacks (unchanged) ────────────────────────────────────────────
-
   void _onBloodGroupSelected(String bloodGroup) {
     setState(() => _selectedBloodGroup = bloodGroup);
     _updateButtonState();
@@ -135,8 +124,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     setState(() => _selectedGender = gender);
     _updateButtonState();
   }
-
-  // ── Location (unchanged) ──────────────────────────────────────────────────
 
   Future<void> _getCurrentLocation() async {
     if (_isGettingLocation) return;
@@ -200,8 +187,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
-  // ── Validation (unchanged) ────────────────────────────────────────────────
-
   bool _validateForm() {
     if (_selectedBloodGroup == null || _selectedBloodGroup!.isEmpty) {
       return false;
@@ -243,8 +228,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ),
     );
   }
-
-  // ── Dialogs ───────────────────────────────────────────────────────────────
 
   void _showPermissionDialog(String message) {
     final baseTheme = themeBloc.state.baseTheme;
@@ -382,8 +365,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  // ── Snackbar helper ───────────────────────────────────────────────────────
-
   SnackBar _snackBar(
     String message,
     Color color, {
@@ -404,8 +385,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       duration: duration,
     );
   }
-
-  // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -439,14 +418,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // ── Hero card ────────────────────────────────────
+                        
                         _HeroCard(baseTheme: baseTheme),
 
                         const SizedBox(height: AppConstants.gap30Px),
 
-                        // ════════════════════════════════════════════════
-                        // REQUIRED INFORMATION
-                        // ════════════════════════════════════════════════
+                        
+                        
                         _SectionHeader(
                           label: ViewConstants.requiredInformation.tr(),
                           baseTheme: baseTheme,
@@ -454,7 +432,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                         const SizedBox(height: AppConstants.gap12Px),
 
-                        // Blood Group
                         _FieldCard(
                           label: ViewConstants.bloodGroup.tr(),
                           isRequired: true,
@@ -467,7 +444,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                         const SizedBox(height: AppConstants.gap12Px),
 
-                        // Date of Birth
                         _DatePickerCard(
                           label: ViewConstants.dateOfBirth.tr(),
                           isRequired: true,
@@ -480,7 +456,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                         const SizedBox(height: AppConstants.gap12Px),
 
-                        // Gender
                         _FieldCard(
                           label: ViewConstants.gender.tr(),
                           isRequired: true,
@@ -493,9 +468,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                         const SizedBox(height: AppConstants.gap30Px),
 
-                        // ════════════════════════════════════════════════
-                        // OPTIONAL INFORMATION
-                        // ════════════════════════════════════════════════
+                        
+                        
                         _SectionHeader(
                           label: ViewConstants.optionalInformation.tr(),
                           baseTheme: baseTheme,
@@ -503,7 +477,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                         const SizedBox(height: AppConstants.gap12Px),
 
-                        // Address + location button
                         CustomTextField(
                           labelText: ViewConstants.address,
                           hintText: ViewConstants.addressHint,
@@ -542,7 +515,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                         const SizedBox(height: AppConstants.gap12Px),
 
-                        // Emergency contact name
                         CustomTextField(
                           labelText: ViewConstants.emergencyContactName,
                           hintText: ViewConstants.emergencyContactNameHint,
@@ -556,7 +528,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                         const SizedBox(height: AppConstants.gap12Px),
 
-                        // Emergency contact phone
                         CustomTextField(
                           labelText: ViewConstants.emergencyContactPhone,
                           hintText: ViewConstants.emergencyContactPhoneHint,
@@ -573,7 +544,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                         const SizedBox(height: AppConstants.gap12Px),
 
-                        // Last donation date
                         _DatePickerCard(
                           label: ViewConstants.lastDonationDate.tr(),
                           isRequired: false,
@@ -586,7 +556,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                         const SizedBox(height: AppConstants.gap30Px),
 
-                        // ── Complete Profile button ───────────────────────
                         StatefulBuilder(
                           builder: (context, setState) {
                             completeProfileButtonStateSetter = setState;
@@ -615,10 +584,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Hero Card  —  welcoming header unique to onboarding
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _HeroCard extends StatelessWidget {
   final dynamic baseTheme;
@@ -655,7 +620,7 @@ class _HeroCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Icon badge
+          
           Container(
             width: 56,
             height: 56,
@@ -680,7 +645,6 @@ class _HeroCard extends StatelessWidget {
 
           const SizedBox(height: AppConstants.gap16Px),
 
-          // Title
           Text(
             ViewConstants.completeYourProfile.tr(),
             style: TextStyle(
@@ -693,7 +657,6 @@ class _HeroCard extends StatelessWidget {
 
           const SizedBox(height: AppConstants.gap8Px),
 
-          // Subtitle
           Text(
             ViewConstants.onboardingSubtitle.tr(),
             style: TextStyle(
@@ -709,10 +672,6 @@ class _HeroCard extends StatelessWidget {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Section Header  —  uppercase label matching edit_onboarding_screen style
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _SectionHeader extends StatelessWidget {
   final String label;
@@ -734,10 +693,6 @@ class _SectionHeader extends StatelessWidget {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Field Card  —  white container with shadow for chip selections
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _FieldCard extends StatelessWidget {
   final String label;
@@ -801,10 +756,6 @@ class _FieldCard extends StatelessWidget {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Date Picker Card  —  tappable card matching edit_onboarding_screen
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _DatePickerCard extends StatelessWidget {
   final String label;
@@ -933,10 +884,6 @@ class _DatePickerCard extends StatelessWidget {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Action Button  —  animated enabled/disabled state
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _ActionButton extends StatelessWidget {
   final String label;

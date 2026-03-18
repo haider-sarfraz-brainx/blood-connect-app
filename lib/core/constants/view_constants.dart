@@ -10,8 +10,7 @@ class ViewConstants {
   static const String connectWithDonorsAndSaveLives = 'connectWithDonorsAndSaveLives';
   static const String getStarted = 'getStarted';
   static const String signIn = 'signIn';
-  
-  // Sign Up Screen
+
   static const String createAccount = 'createAccount';
   static const String signUpSubtitle = 'signUpSubtitle';
   static const String signUp = 'signUp';
@@ -27,8 +26,7 @@ class ViewConstants {
   static const String confirmPasswordHint = 'confirmPasswordHint';
   static const String acceptTerms = 'acceptTerms';
   static const String alreadyHaveAccount = 'alreadyHaveAccount';
-  
-  // Validation Messages
+
   static const String nameRequired = 'nameRequired';
   static const String nameTooShort = 'nameTooShort';
   static const String emailRequired = 'emailRequired';
@@ -44,21 +42,18 @@ class ViewConstants {
   static const String passwordsDoNotMatch = 'passwordsDoNotMatch';
   static const String acceptTermsRequired = 'acceptTermsRequired';
   static const String signUpSuccess = 'signUpSuccess';
-  
-  // Sign In Screen
+
   static const String welcomeBack = 'welcomeBack';
   static const String signInSubtitle = 'signInSubtitle';
   static const String rememberMe = 'rememberMe';
   static const String forgotPassword = 'forgotPassword';
   static const String dontHaveAccount = 'dontHaveAccount';
-  
-  // Bottom Navigation Bar
+
   static const String home = 'home';
   static const String donors = 'donors';
   static const String requestBlood = 'requestBlood';
   static const String setting = 'setting';
-  
-  // Settings Screen
+
   static const String profile = 'profile';
   static const String account = 'account';
   static const String appearance = 'appearance';
@@ -82,17 +77,14 @@ class ViewConstants {
   static const String editProfileTitle = 'editProfileTitle';
   static const String editProfileSubtitle = 'editProfileSubtitle';
   static const String profileUpdated = 'profileUpdated';
-  
-  // Date Picker
+
   static const String cancel = 'cancel';
   static const String done = 'done';
   static const String selectDateOfBirth = 'selectDateOfBirth';
   static const String selectLastDonationDate = 'selectLastDonationDate';
-  
-  // Edit Onboarding
+
   static const String editOnboarding = 'editOnboarding';
-  
-  // Onboarding Screen
+
   static const String completeYourProfile = 'completeYourProfile';
   static const String onboardingSubtitle = 'onboardingSubtitle';
   static const String requiredInformation = 'requiredInformation';
@@ -115,8 +107,7 @@ class ViewConstants {
   static const String settings = 'settings';
   static const String pleaseFillAllRequiredFields = 'pleaseFillAllRequiredFields';
   static const String failedToGetLocation = 'failedToGetLocation';
-  
-  // Blood Request Screen
+
   static const String patientName = 'patientName';
   static const String patientNameHint = 'patientNameHint';
   static const String unitsRequired = 'unitsRequired';
@@ -157,7 +148,6 @@ class ViewConstants {
   static const String confirmFulfillRequest = 'confirmFulfillRequest';
   static const String confirmCancelRequest = 'confirmCancelRequest';
 
-  // Donors Screen
   static const String searchDonors = 'searchDonors';
   static const String noDonorsFound = 'noDonorsFound';
   static const String noDonorsAvailable = 'noDonorsAvailable';

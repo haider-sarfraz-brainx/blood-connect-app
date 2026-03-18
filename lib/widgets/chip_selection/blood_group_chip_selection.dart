@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../bloc/theme_bloc/theme_bloc.dart';
+import '../../config/theme/base.dart';
 import '../../core/constants/app_constants.dart';
-import '../../core/extensions/color.dart';
 import '../../injection_container.dart';
-import '../custom_text.dart';
 
 class BloodGroupChipSelection extends StatelessWidget {
   final String? selectedBloodGroup;
@@ -15,63 +14,123 @@ class BloodGroupChipSelection extends StatelessWidget {
     required this.onBloodGroupSelected,
   });
 
+  static const _bloodGroups = [
+    'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-',
+  ];
+
   @override
   Widget build(BuildContext context) {
-    final themeBloc = sl<ThemeBloc>();
-    final baseTheme = themeBloc.state.baseTheme;
-
-    final bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+    final baseTheme = sl<ThemeBloc>().state.baseTheme;
 
     return Wrap(
-      spacing: AppConstants.gap12Px,
-      runSpacing: AppConstants.gap12Px,
-      children: bloodGroups.map((bloodGroup) {
-        final isSelected = selectedBloodGroup == bloodGroup;
-
-        return GestureDetector(
-          onTap: () => onBloodGroupSelected(bloodGroup),
-          child: Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppConstants.gap20Px,
-              vertical: AppConstants.gap12Px,
+      spacing: AppConstants.gap8Px,
+      runSpacing: AppConstants.gap10Px,
+      children: _bloodGroups
+          .map(
+            (group) => _BloodGroupChip(
+              bloodGroup: group,
+              isSelected: selectedBloodGroup == group,
+              baseTheme: baseTheme,
+              onTap: () => onBloodGroupSelected(group),
             ),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? baseTheme.primary
-                  : baseTheme.white,
-              borderRadius: BorderRadius.circular(AppConstants.radius12Px),
-              border: Border.all(
-                color: isSelected
-                    ? baseTheme.primary
-                    : baseTheme.primary.fixedOpacity(0.2),
-                width: isSelected ? 2 : 1,
+          )
+          .toList(),
+    );
+  }
+}
+
+class _BloodGroupChip extends StatelessWidget {
+  final String bloodGroup;
+  final bool isSelected;
+  final BaseTheme baseTheme;
+  final VoidCallback onTap;
+
+  const _BloodGroupChip({
+    required this.bloodGroup,
+    required this.isSelected,
+    required this.baseTheme,
+    required this.onTap,
+  });
+
+  static const _kRadius = 50.0;
+  static const _kDuration = Duration(milliseconds: 220);
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = baseTheme.primary;
+
+    return AnimatedContainer(
+      duration: _kDuration,
+      curve: Curves.easeInOut,
+      decoration: BoxDecoration(
+        color: isSelected ? primary : primary.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(_kRadius),
+        border: Border.all(
+          color: isSelected ? primary : primary.withOpacity(0.18),
+          width: 1.5,
+        ),
+      ),
+      
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(_kRadius),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            splashColor: isSelected
+                ? Colors.white.withOpacity(0.18)
+                : primary.withOpacity(0.12),
+            highlightColor: isSelected
+                ? Colors.white.withOpacity(0.08)
+                : primary.withOpacity(0.06),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 10,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 180),
+                    transitionBuilder: (child, animation) => ScaleTransition(
+                      scale: animation,
+                      child: child,
+                    ),
+                    child: Icon(
+                      Icons.water_drop_rounded,
+                      key: ValueKey(isSelected),
+                      size: 14,
+                      color: isSelected
+                          ? Colors.white
+                          : primary.withOpacity(0.65),
+                    ),
+                  ),
+
+                  const SizedBox(width: 6),
+
+                  AnimatedDefaultTextStyle(
+                    duration: _kDuration,
+                    curve: Curves.easeInOut,
+                    style: TextStyle(
+                      fontFamily: AppConstants.fontFamilyLato,
+                      fontSize: AppConstants.font14Px,
+                      fontWeight:
+                          isSelected ? FontWeight.w700 : FontWeight.w500,
+                      color: isSelected
+                          ? Colors.white
+                          : primary.withOpacity(0.75),
+                      letterSpacing: 0.3,
+                    ),
+                    child: Text(bloodGroup),
+                  ),
+                ],
               ),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.bloodtype,
-                  color: isSelected
-                      ? baseTheme.white
-                      : baseTheme.primary,
-                  size: 20,
-                ),
-                SizedBox(width: AppConstants.gap8Px),
-                CustomText(
-                  text: bloodGroup,
-                  size: AppConstants.font16Px,
-                  weight: FontWeight.w600,
-                  textColor: isSelected
-                      ? baseTheme.white
-                      : baseTheme.primary,
-                  translate: false,
-                ),
-              ],
-            ),
           ),
-        );
-      }).toList(),
+        ),
+      ),
     );
   }
 }

@@ -3,7 +3,6 @@ import 'dart:ui';
 
 import '../extensions/double.dart';
 
-
 class AppConstants {
   static const String theme = 'theme';
   static const String language = 'language';
@@ -12,8 +11,7 @@ class AppConstants {
 
   static const Locale fallbackLocale = Locale('en', 'US');
 
-
-  // FontSize
+  
   static double font2Px = 2.0.f;
   static double font4Px = 4.0.f;
   static double font6Px = 6.0.f;
@@ -32,7 +30,6 @@ class AppConstants {
   static double font24Px = 24.0.f;
   static double font28Px = 28.0.f;
 
-  // Gap
   static const double gap0Px = 0.0;
   static const double gap2Px = 2.0;
   static const double gap4Px = 4.0;
@@ -56,7 +53,6 @@ class AppConstants {
   static const double gap60Px = 60.0;
   static const double gap70Px = 70.0;
 
-  //Corner Radius
   static const double radius4Px = 4.0;
   static const double radius8Px = 8.0;
   static const double radius10Px = 10.0;
@@ -68,8 +64,7 @@ class AppConstants {
   static const double radius24Px = 24.0;
   static const double radius32Px = 32.0;
 
-
-  //opacity
+  
   static const double opacity10Px = 0.10;
   static const double opacity12Px = 0.12;
   static const double opacity14Px = 0.14;
@@ -78,8 +73,5 @@ class AppConstants {
   static const double opacity30Px = 0.30;
   static const double opacity40Px = 0.40;
   static const double opacity50Px = 0.50;
-
-
-
 
 }

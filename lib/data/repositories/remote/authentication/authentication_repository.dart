@@ -30,7 +30,7 @@ class AuthenticationRepository {
           email: email,
           phone: phone,
           createdAt: DateTime.now(),
-          onboardingCompleted: false, // New users always start with onboarding not completed
+          onboardingCompleted: false, 
         );
         
         await _supabaseService.insertUser(userModel);
@@ -53,10 +53,10 @@ class AuthenticationRepository {
       );
 
       if (response.user != null) {
-        // Always fetch the latest user data from database
+        
         var userModel = await _supabaseService.getUserById(response.user!.id);
         if (userModel == null) {
-          // Create new user if doesn't exist
+          
           final userModelFromAuth = UserModel(
             id: response.user!.id,
             name: response.user!.userMetadata?['name'] ?? '',
@@ -67,7 +67,7 @@ class AuthenticationRepository {
           );
           userModel = await _supabaseService.insertUser(userModelFromAuth);
         }
-        // Return response with user - the bloc will handle saving to session
+        
       }
 
       return response;
@@ -114,8 +114,7 @@ class AuthenticationRepository {
       );
 
       final userModel = await _supabaseService.updateUser(updatedUser);
-      
-      // Update auth metadata
+
       await _supabaseService.client.auth.updateUser(
         UserAttributes(
           data: {

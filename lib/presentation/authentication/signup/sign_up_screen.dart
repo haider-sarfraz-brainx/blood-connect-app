@@ -83,7 +83,6 @@ class _SignUpScreenState extends State<SignUpScreen> with ValidationMixin {
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
@@ -93,13 +92,12 @@ class _SignUpScreenState extends State<SignUpScreen> with ValidationMixin {
       bloc: authenticationBloc,
       listener: (context, state) {
         if (state is AuthenticationAuthenticated) {
-          // New users always need to complete onboarding
-          // Check if onboarding is completed using the userModel from state
+
           if (state.userModel != null && state.userModel!.isOnboardingCompleted) {
-            // User already completed onboarding (edge case - shouldn't happen for new signups)
+            
             AppRouter.pushNamedAndRemoveUntil(context, RouteNames.bottomNavbar);
           } else {
-            // Navigate to onboarding screen for new users
+            
             AppRouter.pushNamedAndRemoveUntil(context, RouteNames.onboarding);
           }
         } else if (state is AuthenticationError) {
@@ -169,7 +167,6 @@ class _SignUpScreenState extends State<SignUpScreen> with ValidationMixin {
                   color: baseTheme.primary,
                 ),
               ),
-
 
               CustomTextField(
                 labelText: ViewConstants.phoneNumber,
@@ -329,7 +326,6 @@ class _SignUpScreenState extends State<SignUpScreen> with ValidationMixin {
     );
   }
 
-
   bool _validateForm() {
     final name = _nameController.text.trim();
     if (name.isEmpty || name.length < 2) {
@@ -362,7 +358,6 @@ class _SignUpScreenState extends State<SignUpScreen> with ValidationMixin {
 
     return true;
   }
-
 
   Future<void> _handleSignUp() async {
     authenticationBloc.add(

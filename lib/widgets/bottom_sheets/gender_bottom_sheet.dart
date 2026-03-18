@@ -68,7 +68,7 @@ class GenderBottomSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Drag Handle
+          
           Container(
             width: 40,
             height: 4,
@@ -78,7 +78,7 @@ class GenderBottomSheet extends StatelessWidget {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          // Title
+          
           Row(
             children: [
               Expanded(
@@ -100,7 +100,7 @@ class GenderBottomSheet extends StatelessWidget {
             ],
           ),
           SizedBox(height: AppConstants.gap20Px),
-          // Gender List
+          
           Flexible(
             child: ListView.separated(
               shrinkWrap: true,

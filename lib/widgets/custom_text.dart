@@ -4,7 +4,6 @@ import '../bloc/theme_bloc/theme_bloc.dart';
 import '../core/constants/app_constants.dart';
 import '../injection_container.dart';
 
-
 class CustomText extends StatelessWidget {
   final String text;
   final double? size;

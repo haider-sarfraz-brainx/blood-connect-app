@@ -15,10 +15,6 @@ import '../../../config/named_router.dart';
 import '../../../data/managers/local/session_manager.dart';
 import '../../../injection_container.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Splash Screen
-// ─────────────────────────────────────────────────────────────────────────────
-
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -28,16 +24,14 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
-  // ── Blocs & services (unchanged logic) ────────────────────────────────────
+  
   ThemeBloc themeBloc = sl<ThemeBloc>();
   AuthenticationBloc authenticationBloc = sl<AuthenticationBloc>();
   SessionManager sessionManager = sl<SessionManager>();
 
-  // ── Animation controllers ──────────────────────────────────────────────────
   late AnimationController _entryController;
   late AnimationController _pulseController;
 
-  // Entry animations
   late Animation<double> _logoScale;
   late Animation<double> _logoFade;
   late Animation<Offset> _titleSlide;
@@ -45,7 +39,6 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _taglineFade;
   late Animation<double> _loaderFade;
 
-  // Pulsing dot animations
   late Animation<double> _dot1;
   late Animation<double> _dot2;
   late Animation<double> _dot3;
@@ -61,7 +54,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _setupAnimations() {
-    // ── Entry controller (plays once on launch) ────────────────────────────
+    
     _entryController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -112,7 +105,6 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    // ── Pulse controller (loops for the loading dots) ──────────────────────
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
@@ -155,7 +147,7 @@ class _SplashScreenState extends State<SplashScreen>
     return BlocListener<AuthenticationBloc, AuthenticationState>(
       bloc: authenticationBloc,
       listener: (context, state) {
-        // ── Auth navigation logic (unchanged) ──────────────────────────────
+        
         if (state is AuthenticationAuthenticated) {
           final user = state.userModel ?? sessionManager.getUser();
           if (user != null && user.isOnboardingCompleted) {
@@ -170,24 +162,23 @@ class _SplashScreenState extends State<SplashScreen>
       child: Scaffold(
         body: Stack(
           children: [
-            // ── Decorative background (static, no repaint overhead) ────────
+            
             Positioned.fill(
               child: CustomPaint(
                 painter: _BackgroundPainter(primary: primary),
               ),
             ),
 
-            // ── Main content ───────────────────────────────────────────────
             SafeArea(
               child: Column(
                 children: [
-                  // Center section: logo + app name + tagline
+                  
                   Expanded(
                     child: Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Logo badge with scale + fade entry
+                          
                           FadeTransition(
                             opacity: _logoFade,
                             child: ScaleTransition(
@@ -201,7 +192,6 @@ class _SplashScreenState extends State<SplashScreen>
 
                           const SizedBox(height: AppConstants.gap30Px),
 
-                          // App name with slide + fade entry
                           FadeTransition(
                             opacity: _titleFade,
                             child: SlideTransition(
@@ -218,7 +208,6 @@ class _SplashScreenState extends State<SplashScreen>
 
                           const SizedBox(height: AppConstants.gap8Px),
 
-                          // Tagline with fade entry
                           FadeTransition(
                             opacity: _taglineFade,
                             child: CustomText(
@@ -235,7 +224,6 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                   ),
 
-                  // Bottom section: pulsing loader fades in last
                   FadeTransition(
                     opacity: _loaderFade,
                     child: Padding(
@@ -259,17 +247,12 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  // ── Auth trigger (unchanged logic) ────────────────────────────────────────
   void initializeComponent() {
     Future.delayed(const Duration(seconds: 2), () {
       authenticationBloc.add(const CheckAuthenticationStatusEvent());
     });
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Background Painter  —  static blobs + warm gradient, zero repaint cost
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _BackgroundPainter extends CustomPainter {
   final Color primary;
@@ -278,7 +261,7 @@ class _BackgroundPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Warm gradient fill
+    
     canvas.drawRect(
       Rect.fromLTWH(0, 0, size.width, size.height),
       Paint()
@@ -293,28 +276,24 @@ class _BackgroundPainter extends CustomPainter {
         ).createShader(Rect.fromLTWH(0, 0, size.width, size.height)),
     );
 
-    // Large blob — top-right corner
     canvas.drawCircle(
       Offset(size.width * 1.18, -size.height * 0.04),
       size.width * 0.55,
       Paint()..color = primary.withOpacity(0.055),
     );
 
-    // Large blob — bottom-left corner
     canvas.drawCircle(
       Offset(-size.width * 0.22, size.height * 1.06),
       size.width * 0.50,
       Paint()..color = primary.withOpacity(0.045),
     );
 
-    // Small accent — upper-left region
     canvas.drawCircle(
       Offset(size.width * 0.07, size.height * 0.27),
       size.width * 0.13,
       Paint()..color = primary.withOpacity(0.04),
     );
 
-    // Small accent — lower-right region
     canvas.drawCircle(
       Offset(size.width * 0.90, size.height * 0.73),
       size.width * 0.10,
@@ -326,10 +305,6 @@ class _BackgroundPainter extends CustomPainter {
   bool shouldRepaint(_BackgroundPainter oldDelegate) =>
       oldDelegate.primary != primary;
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Logo Badge  —  soft circular container with glow
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _LogoBadge extends StatelessWidget {
   final Color primary;
@@ -344,7 +319,7 @@ class _LogoBadge extends StatelessWidget {
     return Stack(
       alignment: Alignment.center,
       children: [
-        // Outer glow ring
+        
         Container(
           width: badgeSize * 1.22,
           height: badgeSize * 1.22,
@@ -354,7 +329,6 @@ class _LogoBadge extends StatelessWidget {
           ),
         ),
 
-        // Inner badge container
         Container(
           width: badgeSize,
           height: badgeSize,
@@ -391,10 +365,6 @@ class _LogoBadge extends StatelessWidget {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Pulsing Dots Loader
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _PulsingDots extends StatelessWidget {
   final Animation<double> dot1;
@@ -435,9 +405,8 @@ class _Dot extends StatelessWidget {
     return AnimatedBuilder(
       animation: animation,
       builder: (context, _) {
-        // animation.value: 0.0 → 1.0
-        // Scale: 0.55 → 1.0  (dots pulse between small and full size)
-        // Opacity: 0.30 → 1.0 (dots pulse between dim and bright)
+
+        
         final scale = 0.55 + 0.45 * animation.value;
         final opacity = 0.30 + 0.70 * animation.value;
         return Transform.scale(

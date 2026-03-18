@@ -77,11 +77,10 @@ class SupabaseService {
     }
   }
 
-  // Blood Request Methods
   Future<BloodRequestModel> insertBloodRequest(BloodRequestModel request) async {
     try {
       final map = request.toMap();
-      // Remove id field if it's empty to let database generate it
+      
       if (map['id'] == null || map['id'] == '') {
         map.remove('id');
       }
@@ -98,7 +97,7 @@ class SupabaseService {
 
   Future<List<BloodRequestModel>> getBloodRequestsByUserId(String userId) async {
     try {
-      // Get requests created by user OR accepted by user
+      
       final response = await client
           .from(DbConstants.bloodRequests)
           .select()
@@ -131,30 +130,26 @@ class SupabaseService {
     String? excludeUserId,
   }) async {
     try {
-      // Always get current user ID as fallback
+      
       final currentUserId = client.auth.currentUser?.id;
       final userIdToExclude = excludeUserId ?? currentUserId;
       
       var query = client
           .from(DbConstants.bloodRequests)
           .select();
-      
-      // Filter by blood group if provided
+
       if (bloodGroup != null && bloodGroup.isNotEmpty) {
         query = query.eq('blood_group', bloodGroup);
       }
-      
-      // Only show pending requests on home screen
+
       final response = await query
           .eq('status', 'pending')
           .order('created_at', ascending: false);
-      
-      // Filter out current user's requests client-side
+
       List<BloodRequestModel> requests = (response as List)
           .map((item) => BloodRequestModel.fromMap(item as Map<String, dynamic>))
           .toList();
-      
-      // Always exclude current user's requests
+
       if (userIdToExclude != null && userIdToExclude.isNotEmpty) {
         requests = requests.where((request) => request.userId != userIdToExclude).toList();
       }
@@ -220,8 +215,7 @@ class SupabaseService {
       if (currentUserId == null) {
         throw Exception('User not authenticated');
       }
-      
-      // Update status and set accepted_by_user_id
+
       final response = await client
           .from(DbConstants.bloodRequests)
           .update({
@@ -230,7 +224,7 @@ class SupabaseService {
             'updated_at': DateTime.now().toIso8601String(),
           })
           .eq('id', requestId)
-          .eq('status', 'pending') // Ensure it's still pending
+          .eq('status', 'pending') 
           .select()
           .single();
       return BloodRequestModel.fromMap(response);
@@ -250,13 +244,11 @@ class SupabaseService {
     }
   }
 
-  // Donor Methods
   Future<List<UserModel>> getAllDonors({String? excludeUserId}) async {
     try {
       final currentUserId = client.auth.currentUser?.id;
       final userIdToExclude = excludeUserId ?? currentUserId;
 
-      // Fetch users who have completed onboarding (blood group is set)
       final response = await client
           .from(DbConstants.users)
           .select()
@@ -267,7 +259,6 @@ class SupabaseService {
           .map((item) => UserModel.fromMap(item as Map<String, dynamic>))
           .toList();
 
-      // Exclude the current logged-in user
       if (userIdToExclude != null && userIdToExclude.isNotEmpty) {
         donors =
             donors.where((user) => user.id != userIdToExclude).toList();

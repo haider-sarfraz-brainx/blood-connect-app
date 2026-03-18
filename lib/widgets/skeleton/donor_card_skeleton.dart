@@ -60,11 +60,11 @@ class _DonorCardSkeletonState extends State<DonorCardSkeleton>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Header: avatar + name/subtitle + blood group badge ───────
+            
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Avatar circle
+                
                 _buildShimmer(
                   height: 52,
                   width: 52,
@@ -73,7 +73,6 @@ class _DonorCardSkeletonState extends State<DonorCardSkeleton>
                 ),
                 const SizedBox(width: AppConstants.gap12Px),
 
-                // Name + subtitle
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,7 +96,6 @@ class _DonorCardSkeletonState extends State<DonorCardSkeleton>
                 ),
                 const SizedBox(width: AppConstants.gap8Px),
 
-                // Blood group badge
                 _buildShimmer(
                   height: 26,
                   width: 44,
@@ -109,7 +107,6 @@ class _DonorCardSkeletonState extends State<DonorCardSkeleton>
 
             const SizedBox(height: AppConstants.gap14Px),
 
-            // ── Divider ──────────────────────────────────────────────────
             _buildShimmer(
               height: 1,
               width: double.infinity,
@@ -119,7 +116,6 @@ class _DonorCardSkeletonState extends State<DonorCardSkeleton>
 
             const SizedBox(height: AppConstants.gap12Px),
 
-            // ── Meta info rows ────────────────────────────────────────────
             Wrap(
               spacing: AppConstants.gap16Px,
               runSpacing: AppConstants.gap6Px,
@@ -131,7 +127,6 @@ class _DonorCardSkeletonState extends State<DonorCardSkeleton>
 
             const SizedBox(height: AppConstants.gap14Px),
 
-            // ── Divider ──────────────────────────────────────────────────
             _buildShimmer(
               height: 1,
               width: double.infinity,
@@ -141,7 +136,6 @@ class _DonorCardSkeletonState extends State<DonorCardSkeleton>
 
             const SizedBox(height: AppConstants.gap14Px),
 
-            // ── Action buttons ────────────────────────────────────────────
             Row(
               children: [
                 Expanded(

@@ -17,10 +17,6 @@ import '../../../injection_container.dart';
 import '../../../widgets/custom_text_field.dart';
 import '../../../widgets/skeleton/donor_card_skeleton.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Donors Screen
-// ─────────────────────────────────────────────────────────────────────────────
-
 class DonorsScreen extends StatefulWidget {
   const DonorsScreen({super.key});
 
@@ -152,7 +148,7 @@ class _DonorsScreenState extends State<DonorsScreen> {
               ),
               body: Column(
                 children: [
-                  // ── Search Bar ──────────────────────────────────────────
+                  
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                     child: CustomTextField(
@@ -174,7 +170,6 @@ class _DonorsScreenState extends State<DonorsScreen> {
                     ),
                   ),
 
-                  // ── Content ─────────────────────────────────────────────
                   Expanded(
                     child: isInitialLoad
                         ? _buildSkeletonList(baseTheme)
@@ -292,10 +287,6 @@ class _DonorsScreenState extends State<DonorsScreen> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Animated List Item
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _AnimatedListItem extends StatelessWidget {
   final int index;
   final Widget child;
@@ -319,10 +310,6 @@ class _AnimatedListItem extends StatelessWidget {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Donor Card
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _DonorCard extends StatelessWidget {
   final UserModel donor;
@@ -392,11 +379,11 @@ class _DonorCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Header: avatar + name/subtitle + blood group badge ───────
+            
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Avatar circle
+                
                 Container(
                   width: 52,
                   height: 52,
@@ -428,7 +415,6 @@ class _DonorCard extends StatelessWidget {
                 ),
                 const SizedBox(width: AppConstants.gap12Px),
 
-                // Name + subtitle
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -464,7 +450,6 @@ class _DonorCard extends StatelessWidget {
                 ),
                 const SizedBox(width: AppConstants.gap8Px),
 
-                // Blood group badge — mirrors status badge in request cards
                 if (donor.bloodGroup != null)
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -490,7 +475,6 @@ class _DonorCard extends StatelessWidget {
 
             const SizedBox(height: AppConstants.gap14Px),
 
-            // ── Divider ──────────────────────────────────────────────────
             Divider(
               height: 1,
               thickness: 1,
@@ -499,7 +483,6 @@ class _DonorCard extends StatelessWidget {
 
             const SizedBox(height: AppConstants.gap12Px),
 
-            // ── Meta info ─────────────────────────────────────────────────
             Wrap(
               spacing: AppConstants.gap16Px,
               runSpacing: AppConstants.gap6Px,
@@ -523,7 +506,6 @@ class _DonorCard extends StatelessWidget {
 
             const SizedBox(height: AppConstants.gap14Px),
 
-            // ── Divider ──────────────────────────────────────────────────
             Divider(
               height: 1,
               thickness: 1,
@@ -532,7 +514,6 @@ class _DonorCard extends StatelessWidget {
 
             const SizedBox(height: AppConstants.gap14Px),
 
-            // ── Action buttons ────────────────────────────────────────────
             Row(
               children: [
                 Expanded(
@@ -560,10 +541,6 @@ class _DonorCard extends StatelessWidget {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Meta Info  —  mirrors _MetaInfo in HomeScreen & BloodRequestScreen
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _MetaInfo extends StatelessWidget {
   final IconData icon;
@@ -605,10 +582,6 @@ class _MetaInfo extends StatelessWidget {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Action Button  (Call / Message)
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _ActionButton extends StatelessWidget {
   final IconData icon;

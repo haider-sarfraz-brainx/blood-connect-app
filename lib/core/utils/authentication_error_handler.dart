@@ -1,7 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'connectivity_checker.dart';
 
-/// Utility class to handle authentication errors and provide user-friendly messages
 class AuthenticationErrorHandler {
   final ConnectivityChecker _connectivityChecker = ConnectivityChecker();
 

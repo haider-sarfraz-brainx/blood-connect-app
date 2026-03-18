@@ -219,9 +219,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> with ValidationMi
 
     final user = sessionManager.getUser();
     if (user != null) {
-      // Check if name or phone has changed
+      
       if (name == user.name && phone == user.phone) {
-        return false; // No changes made
+        return false; 
       }
     }
 

@@ -27,7 +27,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     _authenticationRepository.authStateChanges.listen((authState) async {
       if (authState.event == AuthChangeEvent.signedIn) {
         if (authState.session?.user != null) {
-          // Fetch user model to include in state
+          
           final userModel = await _authenticationRepository.getUserModel(authState.session!.user!.id);
           if (userModel != null) {
             await _sessionManager.saveUser(userModel);
@@ -79,10 +79,10 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       ),
       (response) async {
         if (response.user != null) {
-          // Always fetch the latest user data from database to ensure onboarding status is current
+          
           UserModel? userModel = await _authenticationRepository.getUserModel(response.user!.id);
           if (userModel == null) {
-            // If user doesn't exist in database (shouldn't happen after signup, but handle edge case)
+            
             final userModelFromAuth = UserModel(
               id: response.user!.id,
               name: event.name,
@@ -93,9 +93,9 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
             );
             userModel = userModelFromAuth;
           }
-          // Save user to session manager
+          
           await _sessionManager.saveUser(userModel);
-          // Emit state with user model included
+          
           emit(AuthenticationAuthenticated(response.user!, userModel: userModel));
         } else {
           emit(const AuthenticationError('Sign up failed. Please try again.'));
@@ -116,10 +116,10 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       ),
       (response) async {
         if (response.user != null) {
-          // Always fetch the latest user data from database to ensure onboarding status is current
+          
           UserModel? userModel = await _authenticationRepository.getUserModel(response.user!.id);
           if (userModel == null) {
-            // If user doesn't exist in database, create one
+            
             final userModelFromAuth = UserModel(
               id: response.user!.id,
               name: response.user!.userMetadata?['name'] ?? '',
@@ -130,9 +130,9 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
             );
             userModel = userModelFromAuth;
           }
-          // Save user to session manager
+          
           await _sessionManager.saveUser(userModel);
-          // Emit state with user model included
+          
           emit(AuthenticationAuthenticated(response.user!, userModel: userModel));
         } else {
           emit(const AuthenticationError('Sign in failed. Please try again.'));
@@ -162,18 +162,18 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     final authUser = _authenticationRepository.getCurrentUser();
     
       if (authUser != null) {
-        // Always fetch latest user data from database to ensure onboarding status is current
+        
         final userModel = await _authenticationRepository.getUserModel(authUser.id);
         if (userModel != null) {
           await _sessionManager.saveUser(userModel);
           emit(AuthenticationAuthenticated(authUser, userModel: userModel));
         } else {
-          // User exists in auth but not in database - clear session
+          
           await _sessionManager.clearSession();
           emit(const AuthenticationUnauthenticated());
         }
       } else {
-        // No authenticated user - clear session if exists
+        
         if (_sessionManager.isLoggedIn()) {
           await _sessionManager.clearSession();
         }

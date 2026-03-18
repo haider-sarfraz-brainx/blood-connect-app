@@ -19,10 +19,6 @@ import '../../../widgets/custom_text.dart';
 import '../../../widgets/custom_text_field.dart';
 import '../../../widgets/skeleton/request_card_skeleton.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Home Screen
-// ─────────────────────────────────────────────────────────────────────────────
-
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -31,14 +27,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // ── Services & blocs (unchanged) ──────────────────────────────────────────
+  
   final _searchController = TextEditingController();
   late ThemeBloc themeBloc;
   late BloodRequestBloc bloodRequestBloc;
   late SessionManager sessionManager;
   late SupabaseService supabaseService;
 
-  // ── State (unchanged) ─────────────────────────────────────────────────────
   String? _userBloodGroup;
   String? _selectedBloodGroup;
   String? _currentUserId;
@@ -56,8 +51,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _initializeUserData();
     _searchController.addListener(_onSearchChanged);
   }
-
-  // ── Business logic (unchanged) ────────────────────────────────────────────
 
   void _initializeUserData() {
     final user = sessionManager.getUser();
@@ -159,8 +152,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  // ── Build ─────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
     return BlocListener<BloodRequestBloc, BloodRequestState>(
@@ -246,7 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ── Search bar ─────────────────────────────────────
+                    
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                       child: CustomTextField(
@@ -269,7 +260,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
 
-                    // ── Filter row ─────────────────────────────────────
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                       child: Row(
@@ -301,7 +291,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
 
-                    // ── Content ────────────────────────────────────────
                     Expanded(
                       child: isInitialLoad
                           ? _buildSkeletonList(baseTheme)
@@ -412,10 +401,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Filter Chip
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _FilterChip extends StatelessWidget {
   final String label;
   final bool isActive;
@@ -490,10 +475,6 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Animated List Item
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _AnimatedListItem extends StatelessWidget {
   final int index;
   final Widget child;
@@ -519,10 +500,6 @@ class _AnimatedListItem extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Status Style Helper
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _StatusStyle {
   final Color background;
   final Color foreground;
@@ -530,10 +507,6 @@ class _StatusStyle {
 
   const _StatusStyle(this.background, this.foreground, this.icon);
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Home Request Card  —  matches BloodRequestScreen card + Accept button
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _HomeRequestCard extends StatelessWidget {
   final BloodRequestModel request;
@@ -553,7 +526,7 @@ class _HomeRequestCard extends StatelessWidget {
     if (bg.startsWith('AB')) return const Color(0xFF8E24AA);
     if (bg.startsWith('A')) return const Color(0xFFFF6B35);
     if (bg.startsWith('B')) return const Color(0xFF2196F3);
-    return const Color(0xFFE53935); // O
+    return const Color(0xFFE53935); 
   }
 
   _StatusStyle get _statusStyle {
@@ -638,11 +611,11 @@ class _HomeRequestCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Header: badge + name/hospital + status ───────────
+                
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Blood group badge
+                    
                     Container(
                       width: 52,
                       height: 52,
@@ -669,7 +642,6 @@ class _HomeRequestCard extends StatelessWidget {
                     ),
                     const SizedBox(width: AppConstants.gap12Px),
 
-                    // Patient name + hospital
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -704,7 +676,6 @@ class _HomeRequestCard extends StatelessWidget {
                     ),
                     const SizedBox(width: AppConstants.gap8Px),
 
-                    // Status badge
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
@@ -740,7 +711,6 @@ class _HomeRequestCard extends StatelessWidget {
 
                 const SizedBox(height: AppConstants.gap14Px),
 
-                // ── Divider ─────────────────────────────────────────
                 Divider(
                   height: 1,
                   thickness: 1,
@@ -749,7 +719,6 @@ class _HomeRequestCard extends StatelessWidget {
 
                 const SizedBox(height: AppConstants.gap12Px),
 
-                // ── Meta info ────────────────────────────────────────
                 Wrap(
                   spacing: AppConstants.gap16Px,
                   runSpacing: AppConstants.gap6Px,
@@ -782,7 +751,6 @@ class _HomeRequestCard extends StatelessWidget {
 
                 const SizedBox(height: AppConstants.gap10Px),
 
-                // ── Timestamp ────────────────────────────────────────
                 Row(
                   children: [
                     Icon(
@@ -803,7 +771,6 @@ class _HomeRequestCard extends StatelessWidget {
                   ],
                 ),
 
-                // ── Accept button ────────────────────────────────────
                 if (canAccept) ...[
                   const SizedBox(height: AppConstants.gap14Px),
                   Divider(
@@ -854,10 +821,6 @@ class _HomeRequestCard extends StatelessWidget {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Meta Info Row
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _MetaInfo extends StatelessWidget {
   final IconData icon;

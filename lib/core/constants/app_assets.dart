@@ -1,5 +1,5 @@
 class AppAssets{
-  // Translations
+  
   static const String translations = "assets/translations";
 
   static const String iconsPath = "assets/icons/";

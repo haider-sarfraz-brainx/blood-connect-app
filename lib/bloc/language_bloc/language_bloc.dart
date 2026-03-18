@@ -8,7 +8,6 @@ import '../../main.dart';
 import 'language_events.dart';
 import 'language_states.dart';
 
-
 class LanguageBloc extends Bloc<LanguageEvent, LanguageState> {
   final LanguageRepo _languageRepo;
 
@@ -54,4 +53,3 @@ class LanguageBloc extends Bloc<LanguageEvent, LanguageState> {
     }
   }
 }
-

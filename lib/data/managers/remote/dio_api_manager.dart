@@ -114,7 +114,7 @@ class DioApiManager extends ApiManager {
       dynamic errorMessage;
       try {
         final decoded = response.data;
-        // TODO: Add error message key from server here
+        
         errorMessage = decoded['msg'] ?? decoded['error'];
       } catch (e, s) {
         _handleInvalidResponseException(

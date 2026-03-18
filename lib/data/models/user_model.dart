@@ -8,7 +8,7 @@ class UserModel extends Equatable {
   final String phone;
   final DateTime createdAt;
   final DateTime? updatedAt;
-  // Onboarding fields
+  
   final String? bloodGroup;
   final double? latitude;
   final double? longitude;
@@ -142,13 +142,11 @@ class UserModel extends Equatable {
     return age;
   }
 
-  /// Check if onboarding is completed by verifying required fields are filled
   bool get isOnboardingCompleted {
-    // Check if onboardingCompleted flag is true
-    if (onboardingCompleted) return true;
     
-    // Also check if required onboarding fields are filled
-    // Required fields: bloodGroup, dateOfBirth, gender
+    if (onboardingCompleted) return true;
+
+    
     if (bloodGroup != null && 
         bloodGroup!.isNotEmpty && 
         dateOfBirth != null && 

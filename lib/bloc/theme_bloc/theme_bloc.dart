@@ -6,7 +6,6 @@ import '../../config/theme/dark.dart';
 import '../../config/theme/light.dart';
 import '../../data/repositories/local/theme.dart';
 
-
 class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
   final ThemeRepo _themeRepo;
 

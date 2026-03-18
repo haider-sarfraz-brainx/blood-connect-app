@@ -1,7 +1,6 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'dart:io';
 
-/// Utility class to check network connectivity
 class ConnectivityChecker {
   final Connectivity _connectivity = Connectivity();
 

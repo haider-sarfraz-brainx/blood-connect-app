@@ -105,7 +105,7 @@ class BloodRequestBloc extends Bloc<BloodRequestEvent, BloodRequestState> {
   ) async {
     emit(const BloodRequestLoading());
     try {
-      // Always get current user ID to ensure we exclude user's own requests
+      
       final currentUserId = _supabaseService.client.auth.currentUser?.id;
       final excludeUserId = event.excludeUserId ?? currentUserId;
       

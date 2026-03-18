@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:training_projects/core/extensions/color.dart';
 import '../core/constants/app_constants.dart';
 
-/// A reusable loading overlay widget that shows a semi-transparent overlay
-/// with a centered loading indicator
 class LoadingOverlay extends StatelessWidget {
   final bool isLoading;
   final Widget child;

@@ -12,10 +12,6 @@ import '../home/home_screen.dart';
 import '../request_blood/blood_request_screen.dart';
 import '../setting/setting_screen.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Bottom Navbar Screen
-// ─────────────────────────────────────────────────────────────────────────────
-
 class BottomNavbarScreen extends StatefulWidget {
   const BottomNavbarScreen({super.key});
 
@@ -24,7 +20,7 @@ class BottomNavbarScreen extends StatefulWidget {
 }
 
 class _BottomNavbarScreenState extends State<BottomNavbarScreen> {
-  // ── State (unchanged) ─────────────────────────────────────────────────────
+  
   int _currentIndex = 0;
   late final ThemeBloc themeBloc;
 
@@ -86,20 +82,12 @@ class _BottomNavbarScreenState extends State<BottomNavbarScreen> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Nav Item Data  —  immutable descriptor
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _NavItemData {
   final IconData icon;
   final String label;
 
   const _NavItemData({required this.icon, required this.label});
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Floating Nav Bar  —  elevated, rounded, floating pill container
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _FloatingNavBar extends StatelessWidget {
   final int currentIndex;
@@ -119,7 +107,7 @@ class _FloatingNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      // Floating margin: lifts bar off the screen edge
+      
       margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       decoration: BoxDecoration(
         color: navColors.surface,
@@ -160,10 +148,6 @@ class _FloatingNavBar extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Nav Item  —  animated pill indicator + icon + label
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _NavItem extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -193,7 +177,7 @@ class _NavItem extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // ── Animated pill indicator + icon ───────────────────────────
+            
             AnimatedContainer(
               duration: const Duration(milliseconds: 220),
               curve: Curves.easeInOut,
@@ -224,7 +208,6 @@ class _NavItem extends StatelessWidget {
 
             const SizedBox(height: 3),
 
-            // ── Animated label ───────────────────────────────────────────
             AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 220),
               curve: Curves.easeInOut,

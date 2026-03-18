@@ -60,11 +60,11 @@ class _RequestCardSkeletonState extends State<RequestCardSkeleton>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Header: badge + name/hospital + status ──────────────────
+            
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Blood group circle
+                
                 _buildShimmer(
                   height: 52,
                   width: 52,
@@ -73,7 +73,6 @@ class _RequestCardSkeletonState extends State<RequestCardSkeleton>
                 ),
                 const SizedBox(width: AppConstants.gap12Px),
 
-                // Name + hospital
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,7 +96,6 @@ class _RequestCardSkeletonState extends State<RequestCardSkeleton>
                 ),
                 const SizedBox(width: AppConstants.gap8Px),
 
-                // Status badge
                 _buildShimmer(
                   height: 24,
                   width: 72,
@@ -109,7 +107,6 @@ class _RequestCardSkeletonState extends State<RequestCardSkeleton>
 
             const SizedBox(height: AppConstants.gap14Px),
 
-            // ── Divider ─────────────────────────────────────────────────
             _buildShimmer(
               height: 1,
               width: double.infinity,
@@ -119,7 +116,6 @@ class _RequestCardSkeletonState extends State<RequestCardSkeleton>
 
             const SizedBox(height: AppConstants.gap12Px),
 
-            // ── Meta row ────────────────────────────────────────────────
             Wrap(
               spacing: AppConstants.gap16Px,
               runSpacing: AppConstants.gap6Px,
@@ -147,7 +143,6 @@ class _RequestCardSkeletonState extends State<RequestCardSkeleton>
 
             const SizedBox(height: AppConstants.gap10Px),
 
-            // ── Timestamp ────────────────────────────────────────────────
             _buildShimmer(
               height: 12,
               width: 80,

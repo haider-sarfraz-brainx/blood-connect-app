@@ -18,10 +18,6 @@ import '../../../widgets/custom_text.dart';
 import '../../../widgets/custom_text_field.dart';
 import '../../../widgets/loading_overlay.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Create Blood Request Screen
-// ─────────────────────────────────────────────────────────────────────────────
-
 class CreateBloodScreen extends StatefulWidget {
   const CreateBloodScreen({super.key});
 
@@ -31,7 +27,7 @@ class CreateBloodScreen extends StatefulWidget {
 
 class _CreateBloodScreenState extends State<CreateBloodScreen>
     with ValidationMixin {
-  // ── Form & controllers ────────────────────────────────────────────────────
+  
   final _formKey = GlobalKey<FormState>();
   final _patientNameController = TextEditingController();
   final _unitsRequiredController = TextEditingController();
@@ -47,8 +43,6 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
 
   bool submitButtonDisable = true;
   late StateSetter submitButtonStateSetter;
-
-  // ── Lifecycle ─────────────────────────────────────────────────────────────
 
   @override
   void initState() {
@@ -80,8 +74,6 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
     _contactNumberController.addListener(_updateButtonState);
   }
 
-  // ── Validation (unchanged) ────────────────────────────────────────────────
-
   void _updateButtonState() {
     final isValid = _validateForm();
     if (submitButtonDisable != !isValid) {
@@ -112,8 +104,6 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
     _updateButtonState();
   }
 
-  // ── Submission (unchanged) ────────────────────────────────────────────────
-
   Future<void> _handleSubmitRequest() async {
     if (!_validateForm()) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -141,8 +131,6 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
     );
   }
 
-  // ── Snackbar helper ───────────────────────────────────────────────────────
-
   SnackBar _snackBar(String message, Color color) {
     return SnackBar(
       content: Text(
@@ -156,8 +144,6 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
       ),
     );
   }
-
-  // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -194,7 +180,7 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // ── Back button ──────────────────────────────────
+                        
                         InkWell(
                           onTap: () => AppRouter.pop(context),
                           borderRadius: BorderRadius.circular(
@@ -212,7 +198,6 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
 
                         const SizedBox(height: AppConstants.gap20Px),
 
-                        // ── Page title ───────────────────────────────────
                         CustomText(
                           text: ViewConstants.requestBlood,
                           weight: FontWeight.w800,
@@ -230,9 +215,8 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
 
                         const SizedBox(height: AppConstants.gap30Px),
 
-                        // ════════════════════════════════════════════════
-                        // REQUIRED INFORMATION
-                        // ════════════════════════════════════════════════
+                        
+                        
                         _SectionHeader(
                           label: 'Required Information',
                           baseTheme: baseTheme,
@@ -240,7 +224,6 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
 
                         const SizedBox(height: AppConstants.gap12Px),
 
-                        // Patient name
                         CustomTextField(
                           labelText: ViewConstants.patientName,
                           hintText: ViewConstants.patientNameHint,
@@ -254,7 +237,6 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
 
                         const SizedBox(height: AppConstants.gap12Px),
 
-                        // Blood group
                         _FieldCard(
                           label: ViewConstants.bloodGroup.tr(),
                           isRequired: true,
@@ -267,7 +249,6 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
 
                         const SizedBox(height: AppConstants.gap12Px),
 
-                        // Units required
                         CustomTextField(
                           labelText: ViewConstants.unitsRequired,
                           hintText: ViewConstants.unitsRequiredHint,
@@ -284,7 +265,6 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
 
                         const SizedBox(height: AppConstants.gap12Px),
 
-                        // Hospital name
                         CustomTextField(
                           labelText: ViewConstants.hospitalName,
                           hintText: ViewConstants.hospitalNameHint,
@@ -298,7 +278,6 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
 
                         const SizedBox(height: AppConstants.gap12Px),
 
-                        // Contact number
                         CustomTextField(
                           labelText: ViewConstants.contactNumber,
                           hintText: ViewConstants.contactNumberHint,
@@ -315,9 +294,8 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
 
                         const SizedBox(height: AppConstants.gap30Px),
 
-                        // ════════════════════════════════════════════════
-                        // OPTIONAL INFORMATION
-                        // ════════════════════════════════════════════════
+                        
+                        
                         _SectionHeader(
                           label: 'Optional Information',
                           baseTheme: baseTheme,
@@ -325,7 +303,6 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
 
                         const SizedBox(height: AppConstants.gap12Px),
 
-                        // Hospital address
                         CustomTextField(
                           labelText: ViewConstants.hospitalAddress,
                           hintText: ViewConstants.hospitalAddressHint,
@@ -340,7 +317,6 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
 
                         const SizedBox(height: AppConstants.gap12Px),
 
-                        // Notes
                         CustomTextField(
                           labelText: ViewConstants.notes,
                           hintText: ViewConstants.notesHint,
@@ -355,7 +331,6 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
 
                         const SizedBox(height: AppConstants.gap30Px),
 
-                        // ── Submit button ────────────────────────────────
                         StatefulBuilder(
                           builder: (context, setState) {
                             submitButtonStateSetter = setState;
@@ -385,10 +360,6 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Section Header  —  uppercase label (shared design system)
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _SectionHeader extends StatelessWidget {
   final String label;
   final BaseTheme baseTheme;
@@ -409,10 +380,6 @@ class _SectionHeader extends StatelessWidget {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Field Card  —  white container with shadow for chip selections
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _FieldCard extends StatelessWidget {
   final String label;
@@ -476,10 +443,6 @@ class _FieldCard extends StatelessWidget {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Action Button  —  animated enabled/disabled state (shared design system)
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _ActionButton extends StatelessWidget {
   final String label;
