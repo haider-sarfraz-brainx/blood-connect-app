@@ -243,7 +243,7 @@ class _DonorsScreenState extends State<DonorsScreen> {
               width: 96,
               height: 96,
               decoration: BoxDecoration(
-                color: baseTheme.primary.withOpacity(0.08),
+                color: baseTheme.disable.fixedOpacity(0.08),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -251,7 +251,7 @@ class _DonorsScreenState extends State<DonorsScreen> {
                     ? Icons.search_off_rounded
                     : Icons.people_outline_rounded,
                 size: 44,
-                color: baseTheme.primary.withOpacity(0.5),
+                color: baseTheme.disable.fixedOpacity(0.5),
               ),
             ),
             const SizedBox(height: 24),
@@ -264,7 +264,7 @@ class _DonorsScreenState extends State<DonorsScreen> {
                 fontFamily: AppConstants.fontFamilyLato,
                 fontSize: AppConstants.font18Px,
                 fontWeight: FontWeight.w700,
-                color: baseTheme.textColor,
+                color: baseTheme.disable,
               ),
             ),
             const SizedBox(height: AppConstants.gap8Px),

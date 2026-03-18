@@ -103,47 +103,148 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {});
   }
 
-  Future<void> _handleAcceptRequest(BloodRequestModel request) async {
+  Future<void> _handleAcceptRequest(
+      BuildContext context,
+      BloodRequestModel request,
+      BaseTheme baseTheme,
+      ) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: themeBloc.state.baseTheme.background,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppConstants.radius16Px),
-        ),
-        title: CustomText(
-          text: ViewConstants.acceptRequest,
-          weight: FontWeight.w700,
-          size: AppConstants.font20Px,
-        ),
-        content: CustomText(
-          text: 'Are you sure you want to accept this blood request?',
-          size: AppConstants.font16Px,
-          translate: false,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: CustomText(
-              text: ViewConstants.cancel,
-              textColor: themeBloc.state.baseTheme.textColor,
+      barrierColor: Colors.black.withOpacity(0.4),
+      builder: (context) {
+        return TweenAnimationBuilder<double>(
+          duration: const Duration(milliseconds: 280),
+          tween: Tween(begin: 0.0, end: 1.0),
+          curve: Curves.easeOutCubic,
+          builder: (context, value, child) => Opacity(
+            opacity: value,
+            child: Transform.translate(
+              offset: Offset(0, 20 * (1 - value)),
+              child: child,
             ),
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: CustomText(
-              text: ViewConstants.accept,
-              textColor: themeBloc.state.baseTheme.primary,
-              weight: FontWeight.w700,
+          child: Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Container(
+              decoration: BoxDecoration(
+                color: baseTheme.background,
+                borderRadius: BorderRadius.circular(AppConstants.radius20Px),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.12),
+                    blurRadius: 32,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: baseTheme.primary.withOpacity(0.10),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.water_drop_rounded,
+                          color: baseTheme.primary,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      CustomText(
+                        text: ViewConstants.acceptRequest,
+                        size: AppConstants.font18Px,
+                        weight: FontWeight.w700,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  CustomText(
+                    text:
+                    'Are you sure you want to accept the blood request for ${request.patientName}? The requester will be notified.',
+                    size: AppConstants.font14Px,
+                    weight: FontWeight.w400,
+                    textColor: baseTheme.textColor.fixedOpacity(0.55),
+                    height: 1.5,
+                    translate: false,
+                  ),
+                  const SizedBox(height: 20),
+                  Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: baseTheme.textColor.fixedOpacity(0.08),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppConstants.radius12Px,
+                              ),
+                            ),
+                            side: BorderSide(
+                              color: baseTheme.textColor.fixedOpacity(0.18),
+                            ),
+                          ),
+                          child: CustomText(
+                            text: ViewConstants.cancel,
+                            size: AppConstants.font14Px,
+                            weight: FontWeight.w600,
+                            textColor: baseTheme.textColor.fixedOpacity(0.7),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: baseTheme.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppConstants.radius12Px,
+                              ),
+                            ),
+                            elevation: 0,
+                            shadowColor: Colors.transparent,
+                          ),
+                          child: CustomText(
+                            text: ViewConstants.accept,
+                            size: AppConstants.font14Px,
+                            weight: FontWeight.w700,
+                            textColor: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
     if (confirmed == true) {
       bloodRequestBloc.add(AcceptBloodRequestEvent(requestId: request.id));
     }
   }
+
 
   @override
   void dispose() {
@@ -329,13 +430,13 @@ class _HomeScreenState extends State<HomeScreen> {
               width: 96,
               height: 96,
               decoration: BoxDecoration(
-                color: baseTheme.primary.withOpacity(0.08),
+                color: baseTheme.disable.fixedOpacity(0.08),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.bloodtype_outlined,
                 size: 44,
-                color: baseTheme.primary.withOpacity(0.5),
+                color: baseTheme.disable.fixedOpacity(0.5),
               ),
             ),
             const SizedBox(height: 24),
@@ -348,7 +449,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontFamily: AppConstants.fontFamilyLato,
                 fontSize: AppConstants.font18Px,
                 fontWeight: FontWeight.w700,
-                color: baseTheme.textColor,
+                color: baseTheme.disable,
               ),
             ),
           ],
@@ -374,9 +475,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: _HomeRequestCard(
                   request: request,
                   baseTheme: baseTheme,
-                  onAccept: () => _handleAcceptRequest(request),
-                  canAccept:
-                      request.status == BloodRequestStatus.pending,
+                  onAccept: () => _handleAcceptRequest(context,request, themeBloc.state.baseTheme),
+                  canAccept: request.status == BloodRequestStatus.pending,
                 ),
               );
             },

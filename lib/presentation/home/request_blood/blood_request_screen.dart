@@ -219,6 +219,7 @@ class _BloodRequestScreenState extends State<BloodRequestScreen>
     );
   }
 
+
   Widget _buildList(
     BuildContext context,
     BaseTheme baseTheme,
@@ -237,7 +238,7 @@ class _BloodRequestScreenState extends State<BloodRequestScreen>
               child: _BloodRequestCard(
                 request: requests[index],
                 baseTheme: baseTheme,
-                onTap: () {},
+                onTap: (){},
               ),
             ),
           ),
@@ -394,13 +395,13 @@ class _EmptyState extends StatelessWidget {
               width: 96,
               height: 96,
               decoration: BoxDecoration(
-                color: baseTheme.primary.withOpacity(0.08),
+                color: baseTheme.disable.fixedOpacity(0.08),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.bloodtype_outlined,
                 size: 44,
-                color: baseTheme.primary.withOpacity(0.5),
+                color: baseTheme.disable.fixedOpacity(0.5),
               ),
             ),
             const SizedBox(height: 24),
@@ -413,37 +414,9 @@ class _EmptyState extends StatelessWidget {
                 fontFamily: AppConstants.fontFamilyLato,
                 fontSize: AppConstants.font18Px,
                 fontWeight: FontWeight.w700,
-                color: baseTheme.textColor,
+                color: baseTheme.disable,
               ),
             ),
-            if (!isFiltered) ...[
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: onCreateTap,
-                  icon: const Icon(Icons.add_rounded, size: 18),
-                  label: Text(
-                    ViewConstants.submitRequest.tr(),
-                    style: TextStyle(
-                      fontFamily: AppConstants.fontFamilyLato,
-                      fontSize: AppConstants.font14Px,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: baseTheme.primary,
-                    foregroundColor: baseTheme.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppConstants.radius16Px),
-                    ),
-                    elevation: 0,
-                  ),
-                ),
-              ),
-            ],
           ],
         ),
       ),

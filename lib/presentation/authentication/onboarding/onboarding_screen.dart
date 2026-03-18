@@ -394,7 +394,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       bloc: authenticationBloc,
       listener: (context, state) {
         if (state is AuthenticationAuthenticated) {
-          AppRouter.pushNamedAndRemoveUntil(context, RouteNames.bottomNavbar);
+          if (state.userModel != null && state.userModel!.isOnboardingCompleted) {
+            AppRouter.pushNamedAndRemoveUntil(context, RouteNames.bottomNavbar);
+          }
         } else if (state is AuthenticationError) {
           ScaffoldMessenger.of(context).showSnackBar(
             _snackBar(state.message, Colors.red),
