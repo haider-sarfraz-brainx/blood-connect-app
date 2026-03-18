@@ -1,0 +1,171 @@
+class ViewConstants {
+
+  static const String lump = 'lump';
+  static const String serverError = 'serverError';
+  static const String invalidResponse = 'invalidResponse';
+  static const String lightTheme = 'lightTheme';
+  static const String darkTheme = 'darkTheme';
+  static const String bloodConnect = 'bloodConnect';
+  static const String welcomeToBloodConnect = 'welcomeToBloodConnect';
+  static const String connectWithDonorsAndSaveLives = 'connectWithDonorsAndSaveLives';
+  static const String getStarted = 'getStarted';
+  static const String signIn = 'signIn';
+  
+  // Sign Up Screen
+  static const String createAccount = 'createAccount';
+  static const String signUpSubtitle = 'signUpSubtitle';
+  static const String signUp = 'signUp';
+  static const String fullName = 'fullName';
+  static const String fullNameHint = 'fullNameHint';
+  static const String email = 'email';
+  static const String emailHint = 'emailHint';
+  static const String phoneNumber = 'phoneNumber';
+  static const String phoneNumberHint = 'phoneNumberHint';
+  static const String password = 'password';
+  static const String passwordHint = 'passwordHint';
+  static const String confirmPassword = 'confirmPassword';
+  static const String confirmPasswordHint = 'confirmPasswordHint';
+  static const String acceptTerms = 'acceptTerms';
+  static const String alreadyHaveAccount = 'alreadyHaveAccount';
+  
+  // Validation Messages
+  static const String nameRequired = 'nameRequired';
+  static const String nameTooShort = 'nameTooShort';
+  static const String emailRequired = 'emailRequired';
+  static const String emailInvalid = 'emailInvalid';
+  static const String phoneRequired = 'phoneRequired';
+  static const String phoneInvalid = 'phoneInvalid';
+  static const String passwordRequired = 'passwordRequired';
+  static const String passwordTooShort = 'passwordTooShort';
+  static const String passwordNoUpperCase = 'passwordNoUpperCase';
+  static const String passwordNoLowerCase = 'passwordNoLowerCase';
+  static const String passwordNoNumber = 'passwordNoNumber';
+  static const String confirmPasswordRequired = 'confirmPasswordRequired';
+  static const String passwordsDoNotMatch = 'passwordsDoNotMatch';
+  static const String acceptTermsRequired = 'acceptTermsRequired';
+  static const String signUpSuccess = 'signUpSuccess';
+  
+  // Sign In Screen
+  static const String welcomeBack = 'welcomeBack';
+  static const String signInSubtitle = 'signInSubtitle';
+  static const String rememberMe = 'rememberMe';
+  static const String forgotPassword = 'forgotPassword';
+  static const String dontHaveAccount = 'dontHaveAccount';
+  
+  // Bottom Navigation Bar
+  static const String home = 'home';
+  static const String donors = 'donors';
+  static const String requestBlood = 'requestBlood';
+  static const String setting = 'setting';
+  
+  // Settings Screen
+  static const String profile = 'profile';
+  static const String account = 'account';
+  static const String appearance = 'appearance';
+  static const String language = 'language';
+  static const String notifications = 'notifications';
+  static const String privacy = 'privacy';
+  static const String about = 'about';
+  static const String help = 'help';
+  static const String logout = 'logout';
+  static const String editProfile = 'editProfile';
+  static const String changePassword = 'changePassword';
+  static const String privacyPolicy = 'privacyPolicy';
+  static const String termsOfService = 'termsOfService';
+  static const String appVersion = 'appVersion';
+  static const String contactUs = 'contactUs';
+  static const String enableNotifications = 'enableNotifications';
+  static const String darkMode = 'darkMode';
+  static const String selectLanguage = 'selectLanguage';
+  static const String deleteAccount = 'deleteAccount';
+  static const String updateProfile = 'updateProfile';
+  static const String editProfileTitle = 'editProfileTitle';
+  static const String editProfileSubtitle = 'editProfileSubtitle';
+  static const String profileUpdated = 'profileUpdated';
+  
+  // Date Picker
+  static const String cancel = 'cancel';
+  static const String done = 'done';
+  static const String selectDateOfBirth = 'selectDateOfBirth';
+  static const String selectLastDonationDate = 'selectLastDonationDate';
+  
+  // Edit Onboarding
+  static const String editOnboarding = 'editOnboarding';
+  
+  // Onboarding Screen
+  static const String completeYourProfile = 'completeYourProfile';
+  static const String onboardingSubtitle = 'onboardingSubtitle';
+  static const String requiredInformation = 'requiredInformation';
+  static const String optionalInformation = 'optionalInformation';
+  static const String bloodGroup = 'bloodGroup';
+  static const String dateOfBirth = 'dateOfBirth';
+  static const String gender = 'gender';
+  static const String address = 'address';
+  static const String addressHint = 'addressHint';
+  static const String getCurrentLocation = 'getCurrentLocation';
+  static const String emergencyContactName = 'emergencyContactName';
+  static const String emergencyContactNameHint = 'emergencyContactNameHint';
+  static const String emergencyContactPhone = 'emergencyContactPhone';
+  static const String emergencyContactPhoneHint = 'emergencyContactPhoneHint';
+  static const String lastDonationDate = 'lastDonationDate';
+  static const String completeProfile = 'completeProfile';
+  static const String locationRetrievedSuccessfully = 'locationRetrievedSuccessfully';
+  static const String locationPermissionRequired = 'locationPermissionRequired';
+  static const String openSettings = 'openSettings';
+  static const String settings = 'settings';
+  static const String pleaseFillAllRequiredFields = 'pleaseFillAllRequiredFields';
+  static const String failedToGetLocation = 'failedToGetLocation';
+  
+  // Blood Request Screen
+  static const String patientName = 'patientName';
+  static const String patientNameHint = 'patientNameHint';
+  static const String unitsRequired = 'unitsRequired';
+  static const String unitsRequiredHint = 'unitsRequiredHint';
+  static const String hospitalName = 'hospitalName';
+  static const String hospitalNameHint = 'hospitalNameHint';
+  static const String hospitalAddress = 'hospitalAddress';
+  static const String hospitalAddressHint = 'hospitalAddressHint';
+  static const String contactNumber = 'contactNumber';
+  static const String contactNumberHint = 'contactNumberHint';
+  static const String notes = 'notes';
+  static const String notesHint = 'notesHint';
+  static const String submitRequest = 'submitRequest';
+  static const String requestSubmitted = 'requestSubmitted';
+  static const String requestSubmittedError = 'requestSubmittedError';
+  static const String all = 'all';
+  static const String pending = 'pending';
+  static const String inProgress = 'inProgress';
+  static const String fulfilled = 'fulfilled';
+  static const String cancelled = 'cancelled';
+  static const String accepted = 'accepted';
+  static const String noRequestsFound = 'noRequestsFound';
+  static const String refresh = 'refresh';
+  static const String createdAt = 'createdAt';
+  static const String units = 'units';
+  static const String accept = 'accept';
+  static const String acceptRequest = 'acceptRequest';
+  static const String requestAccepted = 'requestAccepted';
+  static const String search = 'search';
+  static const String searchRequests = 'searchRequests';
+  static const String noRequestsAvailable = 'noRequestsAvailable';
+  static const String filterByBloodGroup = 'filterByBloodGroup';
+  static const String markAsFulfilled = 'markAsFulfilled';
+  static const String markAsCancelled = 'markAsCancelled';
+  static const String cancelRequest = 'cancelRequest';
+  static const String requestFulfilled = 'requestFulfilled';
+  static const String requestCancelled = 'requestCancelled';
+  static const String confirmFulfillRequest = 'confirmFulfillRequest';
+  static const String confirmCancelRequest = 'confirmCancelRequest';
+
+  // Donors Screen
+  static const String searchDonors = 'searchDonors';
+  static const String noDonorsFound = 'noDonorsFound';
+  static const String noDonorsAvailable = 'noDonorsAvailable';
+  static const String call = 'call';
+  static const String message = 'message';
+  static const String availableDonors = 'availableDonors';
+  static const String lastDonated = 'lastDonated';
+  static const String yearsOld = 'yearsOld';
+  static const String noDonationRecord = 'noDonationRecord';
+
+}
