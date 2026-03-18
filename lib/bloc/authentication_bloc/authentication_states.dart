@@ -39,3 +39,7 @@ class AuthenticationError extends AuthenticationState {
   @override
   List<Object?> get props => [message];
 }
+
+class PasswordChangeSuccess extends AuthenticationState {
+  const PasswordChangeSuccess();
+}

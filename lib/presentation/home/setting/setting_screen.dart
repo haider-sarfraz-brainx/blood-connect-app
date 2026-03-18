@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../common/web_view_screen.dart';
 import '../../../bloc/authentication_bloc/authentication_bloc.dart';
 import '../../../bloc/authentication_bloc/authentication_events.dart';
 import '../../../bloc/authentication_bloc/authentication_states.dart';
@@ -41,140 +43,6 @@ class _SettingScreenState extends State<SettingScreen> {
     authenticationBloc = sl<AuthenticationBloc>();
     sessionManager = sl<SessionManager>();
     languageBloc.add(LoadLanguage());
-  }
-
-  void _showLogoutDialog(BaseTheme baseTheme) {
-    showDialog(
-      context: context,
-      barrierColor: Colors.black.withOpacity(0.4),
-      builder: (context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Container(
-            decoration: BoxDecoration(
-              color: baseTheme.background,
-              borderRadius: BorderRadius.circular(AppConstants.radius20Px),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.12),
-                  blurRadius: 32,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                
-                Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.10),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.logout_rounded,
-                        color: Colors.orange.shade700,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Text(
-                      ViewConstants.logout.tr(),
-                      style: TextStyle(
-                        fontFamily: AppConstants.fontFamilyLato,
-                        fontSize: AppConstants.font18Px,
-                        fontWeight: FontWeight.w700,
-                        color: baseTheme.textColor,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Are you sure you want to sign out of your account?',
-                  style: TextStyle(
-                    fontFamily: AppConstants.fontFamilyLato,
-                    fontSize: AppConstants.font14Px,
-                    fontWeight: FontWeight.w400,
-                    color: baseTheme.textColor.fixedOpacity(0.55),
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 13),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppConstants.radius12Px,
-                            ),
-                          ),
-                          side: BorderSide(
-                            color: baseTheme.textColor.fixedOpacity(0.18),
-                          ),
-                        ),
-                        child: Text(
-                          ViewConstants.cancel.tr(),
-                          style: TextStyle(
-                            fontFamily: AppConstants.fontFamilyLato,
-                            fontSize: AppConstants.font14Px,
-                            fontWeight: FontWeight.w600,
-                            color: baseTheme.textColor.fixedOpacity(0.7),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          authenticationBloc.add(const SignOutEvent());
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFD32F2F),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 13),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppConstants.radius12Px,
-                            ),
-                          ),
-                          elevation: 0,
-                          shadowColor: Colors.transparent,
-                        ),
-                        child: Text(
-                          ViewConstants.logout.tr(),
-                          style: TextStyle(
-                            fontFamily: AppConstants.fontFamilyLato,
-                            fontSize: AppConstants.font14Px,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
   }
 
   @override
@@ -287,28 +155,15 @@ class _SettingScreenState extends State<SettingScreen> {
                                 title: ViewConstants.changePassword,
                                 baseTheme: baseTheme,
                                 settingsColors: settingsColors,
-                                onTap: () {},
+                                onTap: () => AppRouter.pushNamed(
+                                context,
+                                RouteNames.changePassword,
+                              ),
                               ),
                             ],
                           ),
 
                           const SizedBox(height: 28),
-
-                          
-
-                          
-
-                          
-
-                          
-
-                          
-
-                          
-
-                          
-
-                          
 
                           _SectionLabel(
                             label: ViewConstants.about,
@@ -323,7 +178,13 @@ class _SettingScreenState extends State<SettingScreen> {
                                 title: ViewConstants.privacyPolicy,
                                 baseTheme: baseTheme,
                                 settingsColors: settingsColors,
-                                onTap: () {},
+                                onTap: () => AppRouter.push(
+                                  context,
+                                  const WebViewScreen(
+                                    url: 'https://www.termsfeed.com/live/b103e918-cbfe-4cb2-8582-d75af9594283',
+                                    title: 'Privacy Policy',
+                                  ),
+                                ),
                               ),
                               _TileDivider(baseTheme: baseTheme),
                               _SettingsTile(
@@ -331,7 +192,13 @@ class _SettingScreenState extends State<SettingScreen> {
                                 title: ViewConstants.termsOfService,
                                 baseTheme: baseTheme,
                                 settingsColors: settingsColors,
-                                onTap: () {},
+                                onTap: () => AppRouter.push(
+                                  context,
+                                  const WebViewScreen(
+                                    url: 'https://www.termsfeed.com/live/437a2d49-1dc2-46c5-8d42-69a201873ad2',
+                                    title: 'Terms & Conditions',
+                                  ),
+                                ),
                               ),
                               _TileDivider(baseTheme: baseTheme),
                               _SettingsTile(
@@ -339,7 +206,7 @@ class _SettingScreenState extends State<SettingScreen> {
                                 title: ViewConstants.help,
                                 baseTheme: baseTheme,
                                 settingsColors: settingsColors,
-                                onTap: () {},
+                                onTap: _launchHelpEmail,
                               ),
                             ],
                           ),
@@ -356,7 +223,7 @@ class _SettingScreenState extends State<SettingScreen> {
                               ),
                               _TileDivider(
                                 baseTheme: baseTheme,
-                                color: Colors.red.withOpacity(0.08),
+                                color: Colors.red.fixedOpacity(0.08),
                               ),
                               _DangerTile(
                                 icon: Icons.logout_rounded,
@@ -377,6 +244,169 @@ class _SettingScreenState extends State<SettingScreen> {
           );
         },
       ),
+    );
+  }
+
+  Future<void> _launchHelpEmail() async {
+    const address = 'haider.sarfraz@brainxtech.com';
+    const subject = 'Help & Support - Blood Connect';
+    // Build the URI manually so spaces are encoded as %20 (RFC 2368),
+    // not as + which Uri(..., queryParameters) produces and Android rejects.
+    final uri = Uri.parse(
+      'mailto:$address?subject=${Uri.encodeComponent(subject)}',
+    );
+
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Could not open email app. Please email us at $address',
+            ),
+            backgroundColor: Colors.red.shade600,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppConstants.radius12Px),
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  void _showLogoutDialog(BaseTheme baseTheme) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.4),
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Container(
+            decoration: BoxDecoration(
+              color: baseTheme.background,
+              borderRadius: BorderRadius.circular(AppConstants.radius20Px),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.12),
+                  blurRadius: 32,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+
+                Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.10),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.logout_rounded,
+                        color: Colors.orange.shade700,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Text(
+                      ViewConstants.logout.tr(),
+                      style: TextStyle(
+                        fontFamily: AppConstants.fontFamilyLato,
+                        fontSize: AppConstants.font18Px,
+                        fontWeight: FontWeight.w700,
+                        color: baseTheme.textColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Are you sure you want to sign out of your account?',
+                  style: TextStyle(
+                    fontFamily: AppConstants.fontFamilyLato,
+                    fontSize: AppConstants.font14Px,
+                    fontWeight: FontWeight.w400,
+                    color: baseTheme.textColor.fixedOpacity(0.55),
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppConstants.radius12Px,
+                            ),
+                          ),
+                          side: BorderSide(
+                            color: baseTheme.textColor.fixedOpacity(0.18),
+                          ),
+                        ),
+                        child: Text(
+                          ViewConstants.cancel.tr(),
+                          style: TextStyle(
+                            fontFamily: AppConstants.fontFamilyLato,
+                            fontSize: AppConstants.font14Px,
+                            fontWeight: FontWeight.w600,
+                            color: baseTheme.textColor.fixedOpacity(0.7),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          authenticationBloc.add(const SignOutEvent());
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFD32F2F),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppConstants.radius12Px,
+                            ),
+                          ),
+                          elevation: 0,
+                          shadowColor: Colors.transparent,
+                        ),
+                        child: Text(
+                          ViewConstants.logout.tr(),
+                          style: TextStyle(
+                            fontFamily: AppConstants.fontFamilyLato,
+                            fontSize: AppConstants.font14Px,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

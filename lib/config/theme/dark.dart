@@ -16,6 +16,8 @@ class DarkTheme implements BaseTheme {
   final Color disable = const Color(0xFF808080);
   @override
   final Color shimmer = const Color(0xFFB5B2B2);
+  @override
+  final Color yellow = const Color(0xFFDD9403);
 
   @override
   final SettingsColors settings = SettingsColorsImpl();

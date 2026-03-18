@@ -35,6 +35,10 @@ class AuthenticationErrorHandler {
       return 'This email is already registered. Please use a different email or sign in.';
     }
 
+    if (errorString.contains('incorrect current password')) {
+      return 'Incorrect current password. Please try again.';
+    }
+
     if (errorString.contains('invalid') && errorString.contains('credentials')) {
       return 'Invalid email or password. Please check your credentials and try again.';
     }

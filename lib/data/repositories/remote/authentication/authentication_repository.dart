@@ -130,6 +130,33 @@ class AuthenticationRepository {
     }
   }
 
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final currentUser = _supabaseService.client.auth.currentUser;
+      if (currentUser == null || currentUser.email == null) {
+        throw Exception('User not authenticated');
+      }
+
+      try {
+        await _supabaseService.client.auth.signInWithPassword(
+          email: currentUser.email!,
+          password: currentPassword,
+        );
+      } catch (_) {
+        throw Exception('Incorrect current password. Please try again.');
+      }
+
+      await _supabaseService.client.auth.updateUser(
+        UserAttributes(password: newPassword),
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<UserModel> completeOnboarding({
     required String userId,
     String? bloodGroup,

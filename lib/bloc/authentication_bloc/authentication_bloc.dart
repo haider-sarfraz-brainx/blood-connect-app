@@ -23,6 +23,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     on<CheckAuthenticationStatusEvent>(_onCheckAuthenticationStatus);
     on<UpdateProfileEvent>(_onUpdateProfile);
     on<CompleteOnboardingEvent>(_onCompleteOnboarding);
+    on<ChangePasswordEvent>(_onChangePassword);
 
     _authenticationRepository.authStateChanges.listen((authState) async {
       if (authState.event == AuthChangeEvent.signedIn) {
@@ -206,6 +207,22 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
         } else {
           emit(const AuthenticationError('Profile updated but user session not found.'));
         }
+      },
+    );
+  }
+
+  Future<void> _onChangePassword(
+    ChangePasswordEvent event,
+    Emitter<AuthenticationState> emit,
+  ) async {
+    await _handleAuthenticationOperation<void>(
+      emit,
+      () => _authenticationRepository.changePassword(
+        currentPassword: event.currentPassword,
+        newPassword: event.newPassword,
+      ),
+      (_) async {
+        emit(const PasswordChangeSuccess());
       },
     );
   }

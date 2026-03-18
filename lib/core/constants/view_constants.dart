@@ -78,6 +78,19 @@ class ViewConstants {
   static const String editProfileSubtitle = 'editProfileSubtitle';
   static const String profileUpdated = 'profileUpdated';
 
+  static const String changePasswordTitle = 'changePasswordTitle';
+  static const String changePasswordSubtitle = 'changePasswordSubtitle';
+  static const String currentPassword = 'currentPassword';
+  static const String currentPasswordHint = 'currentPasswordHint';
+  static const String newPassword = 'newPassword';
+  static const String newPasswordHint = 'newPasswordHint';
+  static const String confirmNewPassword = 'confirmNewPassword';
+  static const String confirmNewPasswordHint = 'confirmNewPasswordHint';
+  static const String passwordChangedSuccess = 'passwordChangedSuccess';
+  static const String currentPasswordRequired = 'currentPasswordRequired';
+  static const String newPasswordTooShort = 'newPasswordTooShort';
+  static const String newPasswordSameAsCurrent = 'newPasswordSameAsCurrent';
+
   static const String cancel = 'cancel';
   static const String done = 'done';
   static const String selectDateOfBirth = 'selectDateOfBirth';

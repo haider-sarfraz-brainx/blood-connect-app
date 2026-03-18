@@ -58,6 +58,19 @@ class UpdateProfileEvent extends AuthenticationEvent {
   List<Object?> get props => [name, phone];
 }
 
+class ChangePasswordEvent extends AuthenticationEvent {
+  final String currentPassword;
+  final String newPassword;
+
+  const ChangePasswordEvent({
+    required this.currentPassword,
+    required this.newPassword,
+  });
+
+  @override
+  List<Object?> get props => [currentPassword, newPassword];
+}
+
 class CompleteOnboardingEvent extends AuthenticationEvent {
   final String? bloodGroup;
   final double? latitude;

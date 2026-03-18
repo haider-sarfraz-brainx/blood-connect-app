@@ -5,6 +5,7 @@ import 'package:training_projects/presentation/authentication/signup/sign_up_scr
 import '../presentation/authentication/spalsh/splash_screen.dart';
 import '../presentation/authentication/welcome/welcome_screen.dart';
 import '../presentation/home/navbar/bottom_navbar_screen.dart';
+import '../presentation/home/setting/change_password_screen.dart';
 import '../presentation/home/setting/edit_profile_screen.dart';
 import '../presentation/home/setting/edit_onboarding_screen.dart';
 
@@ -17,6 +18,7 @@ class RouteNames {
   static const String bottomNavbar = '/bottomNavbar';
   static const String editProfile = '/editProfile';
   static const String editOnboarding = '/editOnboarding';
+  static const String changePassword = '/changePassword';
 
 }
 class RouteGenerator {
@@ -38,6 +40,8 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const EditProfileScreen());
       case RouteNames.editOnboarding:
         return MaterialPageRoute(builder: (_) => const EditOnboardingScreen());
+      case RouteNames.changePassword:
+        return MaterialPageRoute(builder: (_) => const ChangePasswordScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

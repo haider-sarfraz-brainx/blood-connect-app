@@ -7,6 +7,7 @@ abstract class BaseTheme {
   Color get white;
   Color get disable;
   Color get shimmer;
+  Color get yellow;
 
   SettingsColors get settings;
   BottomNavBarColors get bottomNavBar;
