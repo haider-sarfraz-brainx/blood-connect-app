@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
-import 'package:training_projects/bloc/theme_bloc/theme_events.dart';
-import 'package:training_projects/bloc/theme_bloc/theme_states.dart';
+import 'package:quick_blood/bloc/theme_bloc/theme_events.dart';
+import 'package:quick_blood/bloc/theme_bloc/theme_states.dart';
 import '../../config/config.dart';
 import '../../config/theme/dark.dart';
 import '../../config/theme/light.dart';

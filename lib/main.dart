@@ -54,7 +54,7 @@ class MyApp extends StatelessWidget {
     final themeBloc = context.watch<ThemeBloc>();
     return MaterialApp(
       navigatorKey: navigatorKey,
-      title: 'Blood Connect App',
+      title: 'Quick Blood',
       debugShowCheckedModeBanner: false,
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,

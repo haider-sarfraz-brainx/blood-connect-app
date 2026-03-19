@@ -326,6 +326,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 size: AppConstants.font20Px,
                 weight: FontWeight.w700,
               ),
+              centerTitle: false,
             ),
             body: BlocBuilder<BloodRequestBloc, BloodRequestState>(
               bloc: bloodRequestBloc,

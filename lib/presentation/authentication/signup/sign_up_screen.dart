@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:training_projects/core/extensions/color.dart';
+import 'package:quick_blood/core/extensions/color.dart';
 import '../../../bloc/authentication_bloc/authentication_bloc.dart';
 import '../../../bloc/authentication_bloc/authentication_events.dart';
 import '../../../bloc/authentication_bloc/authentication_states.dart';

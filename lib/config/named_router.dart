@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:training_projects/presentation/authentication/onboarding/onboarding_screen.dart';
-import 'package:training_projects/presentation/authentication/signin/sign_in_screen.dart';
-import 'package:training_projects/presentation/authentication/signup/sign_up_screen.dart';
+import 'package:quick_blood/presentation/authentication/onboarding/onboarding_screen.dart';
+import 'package:quick_blood/presentation/authentication/signin/sign_in_screen.dart';
+import 'package:quick_blood/presentation/authentication/signup/sign_up_screen.dart';
 import '../presentation/authentication/spalsh/splash_screen.dart';
 import '../presentation/authentication/welcome/welcome_screen.dart';
 import '../presentation/home/navbar/bottom_navbar_screen.dart';

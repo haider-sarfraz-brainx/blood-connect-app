@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:training_projects/core/extensions/color.dart';
+import 'package:quick_blood/core/extensions/color.dart';
 import '../../../bloc/theme_bloc/theme_bloc.dart';
 import '../../../config/theme/base.dart';
 import '../../../core/constants/app_constants.dart';

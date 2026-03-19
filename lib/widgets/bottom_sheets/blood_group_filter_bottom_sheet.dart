@@ -22,8 +22,10 @@ class BloodGroupFilterBottomSheet extends StatefulWidget {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) {
-        return BloodGroupFilterBottomSheet(
-          selectedBloodGroup: selectedBloodGroup,
+        return SafeArea(
+          child: BloodGroupFilterBottomSheet(
+            selectedBloodGroup: selectedBloodGroup,
+          ),
         );
       },
     ).then((value) {

@@ -120,6 +120,7 @@ class _DonorsScreenState extends State<DonorsScreen> {
                 backgroundColor: baseTheme.background,
                 elevation: 0,
                 scrolledUnderElevation: 0,
+                centerTitle: false,
                 title: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

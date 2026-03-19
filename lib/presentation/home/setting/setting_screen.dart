@@ -92,6 +92,7 @@ class _SettingScreenState extends State<SettingScreen> {
                     backgroundColor: baseTheme.background,
                     elevation: 0,
                     scrolledUnderElevation: 0,
+                    centerTitle: false,
                     title: Text(
                       ViewConstants.setting.tr(),
                       style: TextStyle(

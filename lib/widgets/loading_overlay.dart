@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:training_projects/core/extensions/color.dart';
+import 'package:quick_blood/core/extensions/color.dart';
 import '../core/constants/app_constants.dart';
 
 class LoadingOverlay extends StatelessWidget {

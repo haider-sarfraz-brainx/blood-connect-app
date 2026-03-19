@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:training_projects/core/constants/view_constants.dart';
+import 'package:quick_blood/core/constants/view_constants.dart';
 import '../../../bloc/theme_bloc/theme_bloc.dart';
 import '../../../config/theme/base.dart';
 import '../../../config/app_router.dart';
