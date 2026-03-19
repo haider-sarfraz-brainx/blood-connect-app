@@ -157,6 +157,27 @@ class AuthenticationRepository {
     }
   }
 
+  Future<void> forgotPassword(String email) async {
+    try {
+      await _supabaseService.client.auth.resetPasswordForEmail(
+        email,
+        redirectTo: 'io.supabase.bloodconnect://reset-callback',
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateRecoveryPassword(String newPassword) async {
+    try {
+      await _supabaseService.client.auth.updateUser(
+        UserAttributes(password: newPassword),
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<UserModel> completeOnboarding({
     required String userId,
     String? bloodGroup,
@@ -191,6 +212,14 @@ class AuthenticationRepository {
 
       final userModel = await _supabaseService.updateUser(updatedUser);
       return userModel;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> deleteAccount(String userId) async {
+    try {
+      await _supabaseService.deleteAccount(userId);
     } catch (e) {
       rethrow;
     }

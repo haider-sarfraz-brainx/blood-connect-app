@@ -11,6 +11,9 @@ import 'data/repositories/local/theme.dart';
 import 'injection_container.dart';
 import 'config/languages/language_config.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'bloc/authentication_bloc/authentication_bloc.dart';
+import 'bloc/authentication_bloc/authentication_states.dart';
+
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -60,6 +63,20 @@ class MyApp extends StatelessWidget {
       theme: themeBloc.state.baseTheme.themeData,
       initialRoute: RouteNames.splash,
       onGenerateRoute: RouteGenerator.generateRoute,
+      builder: (context, child) {
+        return BlocListener<AuthenticationBloc, AuthenticationState>(
+          bloc: sl<AuthenticationBloc>(),
+          listener: (context, state) {
+            if (state is AuthenticationPasswordRecovery) {
+              navigatorKey.currentState?.pushNamedAndRemoveUntil(
+                RouteNames.updatePassword,
+                (route) => false,
+              );
+            }
+          },
+          child: child!,
+        );
+      },
     );
   }
 }

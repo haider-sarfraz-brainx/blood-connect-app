@@ -172,7 +172,7 @@ class _SignInScreenState extends State<SignInScreen> with ValidationMixin {
                 alignment: AlignmentGeometry.centerRight,
                 child: GestureDetector(
                   onTap: () {
-                    
+                    AppRouter.pushNamed(context, RouteNames.forgotPassword);
                   },
                   child: CustomText(
                     text: ViewConstants.forgotPassword,

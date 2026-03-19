@@ -43,3 +43,15 @@ class AuthenticationError extends AuthenticationState {
 class PasswordChangeSuccess extends AuthenticationState {
   const PasswordChangeSuccess();
 }
+
+class ForgotPasswordEmailSent extends AuthenticationState {
+  const ForgotPasswordEmailSent();
+}
+
+class AuthenticationPasswordRecovery extends AuthenticationState {
+  const AuthenticationPasswordRecovery();
+}
+
+class UpdatePasswordSuccess extends AuthenticationState {
+  const UpdatePasswordSuccess();
+}

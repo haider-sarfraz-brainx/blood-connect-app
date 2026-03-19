@@ -20,10 +20,13 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     on<SignUpEvent>(_onSignUp);
     on<SignInEvent>(_onSignIn);
     on<SignOutEvent>(_onSignOut);
+    on<DeleteAccountEvent>(_onDeleteAccount);
     on<CheckAuthenticationStatusEvent>(_onCheckAuthenticationStatus);
     on<UpdateProfileEvent>(_onUpdateProfile);
     on<CompleteOnboardingEvent>(_onCompleteOnboarding);
     on<ChangePasswordEvent>(_onChangePassword);
+    on<ForgotPasswordEvent>(_onForgotPassword);
+    on<UpdatePasswordFromRecoveryEvent>(_onUpdatePasswordFromRecovery);
 
     _authenticationRepository.authStateChanges.listen((authState) async {
       if (authState.event == AuthChangeEvent.signedIn) {
@@ -37,6 +40,8 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
         }
       } else if (authState.event == AuthChangeEvent.signedOut) {
         emit(const AuthenticationUnauthenticated());
+      } else if (authState.event == AuthChangeEvent.passwordRecovery) {
+        emit(const AuthenticationPasswordRecovery());
       }
     });
   }
@@ -156,10 +161,32 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     );
   }
 
+  Future<void> _onDeleteAccount(
+    DeleteAccountEvent event,
+    Emitter<AuthenticationState> emit,
+  ) async {
+    await _handleAuthenticationOperation<void>(
+      emit,
+      () async {
+        final currentUser = _authenticationRepository.getCurrentUser();
+        if (currentUser == null) {
+          throw Exception('User not authenticated');
+        }
+        await _authenticationRepository.deleteAccount(currentUser.id);
+      },
+      (_) async {
+        await _sessionManager.clearSession();
+        emit(const AuthenticationUnauthenticated());
+      },
+    );
+  }
+
   Future<void> _onCheckAuthenticationStatus(
     CheckAuthenticationStatusEvent event,
     Emitter<AuthenticationState> emit,
   ) async {
+    if (state is AuthenticationPasswordRecovery) return;
+
     final authUser = _authenticationRepository.getCurrentUser();
     
       if (authUser != null) {
@@ -259,6 +286,32 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
         } else {
           emit(const AuthenticationError('Onboarding completed but user session not found.'));
         }
+      },
+    );
+  }
+
+  Future<void> _onForgotPassword(
+    ForgotPasswordEvent event,
+    Emitter<AuthenticationState> emit,
+  ) async {
+    await _handleAuthenticationOperation<void>(
+      emit,
+      () => _authenticationRepository.forgotPassword(event.email),
+      (_) async {
+        emit(const ForgotPasswordEmailSent());
+      },
+    );
+  }
+
+  Future<void> _onUpdatePasswordFromRecovery(
+    UpdatePasswordFromRecoveryEvent event,
+    Emitter<AuthenticationState> emit,
+  ) async {
+    await _handleAuthenticationOperation<void>(
+      emit,
+      () => _authenticationRepository.updateRecoveryPassword(event.newPassword),
+      (_) async {
+        emit(const UpdatePasswordSuccess());
       },
     );
   }

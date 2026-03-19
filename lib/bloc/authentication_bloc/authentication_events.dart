@@ -41,6 +41,10 @@ class SignOutEvent extends AuthenticationEvent {
   const SignOutEvent();
 }
 
+class DeleteAccountEvent extends AuthenticationEvent {
+  const DeleteAccountEvent();
+}
+
 class CheckAuthenticationStatusEvent extends AuthenticationEvent {
   const CheckAuthenticationStatusEvent();
 }
@@ -106,4 +110,26 @@ class CompleteOnboardingEvent extends AuthenticationEvent {
         emergencyContactPhone,
         lastDonationDate,
       ];
+}
+
+class ForgotPasswordEvent extends AuthenticationEvent {
+  final String email;
+
+  const ForgotPasswordEvent({
+    required this.email,
+  });
+
+  @override
+  List<Object?> get props => [email];
+}
+
+class UpdatePasswordFromRecoveryEvent extends AuthenticationEvent {
+  final String newPassword;
+
+  const UpdatePasswordFromRecoveryEvent({
+    required this.newPassword,
+  });
+
+  @override
+  List<Object?> get props => [newPassword];
 }

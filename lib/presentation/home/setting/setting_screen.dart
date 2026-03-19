@@ -219,7 +219,7 @@ class _SettingScreenState extends State<SettingScreen> {
                                 icon: Icons.delete_rounded,
                                 title: ViewConstants.deleteAccount,
                                 baseTheme: baseTheme,
-                                onTap: () {},
+                                onTap: () => _showDeleteAccountDialog(baseTheme),
                               ),
                               _TileDivider(
                                 baseTheme: baseTheme,
@@ -391,6 +391,140 @@ class _SettingScreenState extends State<SettingScreen> {
                         ),
                         child: Text(
                           ViewConstants.logout.tr(),
+                          style: TextStyle(
+                            fontFamily: AppConstants.fontFamilyLato,
+                            fontSize: AppConstants.font14Px,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showDeleteAccountDialog(BaseTheme baseTheme) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.4),
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Container(
+            decoration: BoxDecoration(
+              color: baseTheme.background,
+              borderRadius: BorderRadius.circular(AppConstants.radius20Px),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.12),
+                  blurRadius: 32,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+
+                Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.10),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.delete_rounded,
+                        color: Colors.red.shade700,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Text(
+                      ViewConstants.deleteAccount.tr(),
+                      style: TextStyle(
+                        fontFamily: AppConstants.fontFamilyLato,
+                        fontSize: AppConstants.font18Px,
+                        fontWeight: FontWeight.w700,
+                        color: baseTheme.textColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Are you sure you want to delete your account? This action cannot be undone and will permanently delete all your data.',
+                  style: TextStyle(
+                    fontFamily: AppConstants.fontFamilyLato,
+                    fontSize: AppConstants.font14Px,
+                    fontWeight: FontWeight.w400,
+                    color: baseTheme.textColor.fixedOpacity(0.55),
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppConstants.radius12Px,
+                            ),
+                          ),
+                          side: BorderSide(
+                            color: baseTheme.textColor.fixedOpacity(0.18),
+                          ),
+                        ),
+                        child: Text(
+                          ViewConstants.cancel.tr(),
+                          style: TextStyle(
+                            fontFamily: AppConstants.fontFamilyLato,
+                            fontSize: AppConstants.font14Px,
+                            fontWeight: FontWeight.w600,
+                            color: baseTheme.textColor.fixedOpacity(0.7),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          authenticationBloc.add(const DeleteAccountEvent());
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFD32F2F),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppConstants.radius12Px,
+                            ),
+                          ),
+                          elevation: 0,
+                          shadowColor: Colors.transparent,
+                        ),
+                        child: Text(
+                          ViewConstants.delete.tr(),
                           style: TextStyle(
                             fontFamily: AppConstants.fontFamilyLato,
                             fontSize: AppConstants.font14Px,

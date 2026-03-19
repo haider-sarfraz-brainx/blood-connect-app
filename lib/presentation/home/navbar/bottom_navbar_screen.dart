@@ -54,29 +54,31 @@ class _BottomNavbarScreenState extends State<BottomNavbarScreen> {
         index: _currentIndex,
         children: _screens,
       ),
-      bottomNavigationBar: _FloatingNavBar(
-        currentIndex: _currentIndex,
-        baseTheme: baseTheme,
-        navColors: navColors,
-        onTap: _onTabTapped,
-        items: const [
-          _NavItemData(
-            icon: Icons.home_rounded,
-            label: ViewConstants.home,
-          ),
-          _NavItemData(
-            icon: Icons.people_rounded,
-            label: ViewConstants.donors,
-          ),
-          _NavItemData(
-            icon: Icons.bloodtype_rounded,
-            label: ViewConstants.requestBlood,
-          ),
-          _NavItemData(
-            icon: Icons.settings_rounded,
-            label: ViewConstants.setting,
-          ),
-        ],
+      bottomNavigationBar: SafeArea(
+        child: _FloatingNavBar(
+          currentIndex: _currentIndex,
+          baseTheme: baseTheme,
+          navColors: navColors,
+          onTap: _onTabTapped,
+          items: const [
+            _NavItemData(
+              icon: Icons.home_rounded,
+              label: ViewConstants.home,
+            ),
+            _NavItemData(
+              icon: Icons.people_rounded,
+              label: ViewConstants.donors,
+            ),
+            _NavItemData(
+              icon: Icons.bloodtype_rounded,
+              label: ViewConstants.requestBlood,
+            ),
+            _NavItemData(
+              icon: Icons.settings_rounded,
+              label: ViewConstants.setting,
+            ),
+          ],
+        ),
       ),
     );
   }

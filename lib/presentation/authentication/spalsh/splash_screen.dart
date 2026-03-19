@@ -16,7 +16,8 @@ import '../../../data/managers/local/session_manager.dart';
 import '../../../injection_container.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  final String? deepLinkError;
+  const SplashScreen({super.key, this.deepLinkError});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -49,6 +50,16 @@ class _SplashScreenState extends State<SplashScreen>
     _setupAnimations();
     SchedulerBinding.instance.addPostFrameCallback((_) {
       _entryController.forward();
+      if (widget.deepLinkError != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(widget.deepLinkError!),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
       initializeComponent();
     });
   }
@@ -249,7 +260,21 @@ class _SplashScreenState extends State<SplashScreen>
 
   void initializeComponent() {
     Future.delayed(const Duration(seconds: 2), () {
-      authenticationBloc.add(const CheckAuthenticationStatusEvent());
+      final currentState = authenticationBloc.state;
+      if (currentState is AuthenticationAuthenticated) {
+        final user = currentState.userModel ?? sessionManager.getUser();
+        if (user != null && user.isOnboardingCompleted) {
+          AppRouter.pushNamedAndRemoveUntil(context, RouteNames.bottomNavbar);
+        } else {
+          AppRouter.pushNamedAndRemoveUntil(context, RouteNames.onboarding);
+        }
+      } else if (currentState is AuthenticationUnauthenticated) {
+        AppRouter.pushNamedAndRemoveUntil(context, RouteNames.welcome);
+      } else if (currentState is AuthenticationPasswordRecovery) {
+        
+      } else {
+        authenticationBloc.add(const CheckAuthenticationStatusEvent());
+      }
     });
   }
 }

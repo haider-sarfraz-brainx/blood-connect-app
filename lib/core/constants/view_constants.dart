@@ -73,6 +73,7 @@ class ViewConstants {
   static const String darkMode = 'darkMode';
   static const String selectLanguage = 'selectLanguage';
   static const String deleteAccount = 'deleteAccount';
+  static const String delete = 'delete';
   static const String updateProfile = 'updateProfile';
   static const String editProfileTitle = 'editProfileTitle';
   static const String editProfileSubtitle = 'editProfileSubtitle';

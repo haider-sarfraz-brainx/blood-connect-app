@@ -8,6 +8,8 @@ import '../presentation/home/navbar/bottom_navbar_screen.dart';
 import '../presentation/home/setting/change_password_screen.dart';
 import '../presentation/home/setting/edit_profile_screen.dart';
 import '../presentation/home/setting/edit_onboarding_screen.dart';
+import '../presentation/authentication/forgot_password/forgot_password_screen.dart';
+import '../presentation/authentication/forgot_password/update_password_screen.dart';
 
 class RouteNames {
   static const String splash = '/';
@@ -19,13 +21,31 @@ class RouteNames {
   static const String editProfile = '/editProfile';
   static const String editOnboarding = '/editOnboarding';
   static const String changePassword = '/changePassword';
+  static const String forgotPassword = '/forgotPassword';
+  static const String updatePassword = '/updatePassword';
 
 }
 class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings) {
-    switch (settings.name) {
+    String routeName = settings.name ?? '';
+    String? deepLinkError;
+
+    if (routeName.startsWith('/?')) {
+      try {
+        Uri uri = Uri.parse(routeName);
+        if (uri.queryParameters.containsKey('error_description')) {
+          deepLinkError = uri.queryParameters['error_description']?.replaceAll('+', ' ');
+        } else if (uri.fragment.contains('error_description=')) {
+          final fragmentUri = Uri.parse('?${uri.fragment}');
+          deepLinkError = fragmentUri.queryParameters['error_description']?.replaceAll('+', ' ');
+        }
+      } catch (_) {}
+      routeName = RouteNames.splash;
+    }
+
+    switch (routeName) {
       case RouteNames.splash:
-        return MaterialPageRoute(builder: (_) => SplashScreen());
+        return MaterialPageRoute(builder: (_) => SplashScreen(deepLinkError: deepLinkError));
       case RouteNames.welcome:
         return MaterialPageRoute(builder: (_) => WelcomeScreen());
       case RouteNames.signup:
@@ -42,6 +62,10 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const EditOnboardingScreen());
       case RouteNames.changePassword:
         return MaterialPageRoute(builder: (_) => const ChangePasswordScreen());
+      case RouteNames.forgotPassword:
+        return MaterialPageRoute(builder: (_) => const ForgotPasswordScreen());
+      case RouteNames.updatePassword:
+        return MaterialPageRoute(builder: (_) => const UpdatePasswordScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

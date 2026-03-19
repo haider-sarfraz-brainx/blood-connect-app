@@ -264,7 +264,22 @@ class SupabaseService {
             donors.where((user) => user.id != userIdToExclude).toList();
       }
 
+
       return donors;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> deleteAccount(String userId) async {
+    try {
+      // Call the Supabase RPC function 'delete_user'
+      // This function MUST be executed within your Supabase project using the SQL Editor.
+      // It handles bypassing RLS safely to delete the auth account and its related data.
+      await client.rpc('delete_user');
+      
+      // If it completes successfully without errors, sign out locally
+      await client.auth.signOut();
     } catch (e) {
       rethrow;
     }
