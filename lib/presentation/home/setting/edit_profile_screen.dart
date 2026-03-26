@@ -52,7 +52,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> with ValidationMi
     if (user != null) {
       _nameController.text = user.name;
       _emailController.text = user.email;
-      _phoneController.text = user.phone;
+      _phoneController.text = user.phone!;
     }
   }
 

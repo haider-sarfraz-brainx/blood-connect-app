@@ -5,7 +5,7 @@ class UserModel extends Equatable {
   final String id;
   final String name;
   final String email;
-  final String phone;
+  final String? phone;
   final DateTime createdAt;
   final DateTime? updatedAt;
   
@@ -24,7 +24,7 @@ class UserModel extends Equatable {
     required this.id,
     required this.name,
     required this.email,
-    required this.phone,
+    this.phone,
     required this.createdAt,
     this.updatedAt,
     this.bloodGroup,
@@ -65,7 +65,7 @@ class UserModel extends Equatable {
       id: map['id'] as String,
       name: map['name'] as String,
       email: map['email'] as String,
-      phone: map['phone'] as String,
+      phone: map['phone'] as String?,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: map['updated_at'] != null
           ? DateTime.parse(map['updated_at'] as String)
@@ -178,3 +178,4 @@ class UserModel extends Equatable {
         onboardingCompleted,
       ];
 }
+

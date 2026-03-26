@@ -338,7 +338,7 @@ class _SignUpScreenState extends State<SignUpScreen> with ValidationMixin {
     }
 
     final phone = _phoneController.text.trim();
-    if (phone.isEmpty || phone.length < 10) {
+    if (phone.isNotEmpty && phone.length < 10) {
       return false;
     }
 
@@ -364,7 +364,7 @@ class _SignUpScreenState extends State<SignUpScreen> with ValidationMixin {
       SignUpEvent(
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
-        phone: _phoneController.text.trim(),
+        phone: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
         password: _passwordController.text,
       ),
     );

@@ -9,6 +9,7 @@ import '../../../core/constants/view_constants.dart';
 import '../../../injection_container.dart';
 import '../donors/donors_screen.dart';
 import '../home/home_screen.dart';
+import '../messaging/conversation_list_screen.dart';
 import '../request_blood/blood_request_screen.dart';
 import '../setting/setting_screen.dart';
 
@@ -27,6 +28,7 @@ class _BottomNavbarScreenState extends State<BottomNavbarScreen> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const DonorsScreen(),
+    const ConversationListScreen(),
     const BloodRequestScreen(),
     const SettingScreen(),
   ];
@@ -70,8 +72,12 @@ class _BottomNavbarScreenState extends State<BottomNavbarScreen> {
               label: ViewConstants.donors,
             ),
             _NavItemData(
+              icon: Icons.chat_bubble_rounded,
+              label: 'Messages',
+            ),
+            _NavItemData(
               icon: Icons.bloodtype_rounded,
-              label: ViewConstants.requestBlood,
+              label: "Requests",
             ),
             _NavItemData(
               icon: Icons.settings_rounded,

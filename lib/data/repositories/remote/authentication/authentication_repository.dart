@@ -11,7 +11,7 @@ class AuthenticationRepository {
     required String email,
     required String password,
     required String name,
-    required String phone,
+    String? phone,
   }) async {
     try {
       final response = await _supabaseService.client.auth.signUp(
@@ -19,7 +19,7 @@ class AuthenticationRepository {
         password: password,
         data: {
           'name': name,
-          'phone': phone,
+          if (phone != null) 'phone': phone,
         },
       );
 
@@ -99,7 +99,7 @@ class AuthenticationRepository {
   Future<UserModel> updateProfile({
     required String userId,
     required String name,
-    required String phone,
+    String? phone,
   }) async {
     try {
       final currentUser = await _supabaseService.getUserById(userId);
@@ -119,7 +119,7 @@ class AuthenticationRepository {
         UserAttributes(
           data: {
             'name': name,
-            'phone': phone,
+            if (phone != null) 'phone': phone,
           },
         ),
       );
@@ -191,9 +191,24 @@ class AuthenticationRepository {
     DateTime? lastDonationDate,
   }) async {
     try {
-      final currentUser = await _supabaseService.getUserById(userId);
+      var currentUser = await _supabaseService.getUserById(userId);
+      
       if (currentUser == null) {
-        throw Exception('User not found');
+        
+        final authUser = _supabaseService.client.auth.currentUser;
+        if (authUser != null) {
+          final newUser = UserModel(
+            id: authUser.id,
+            name: authUser.userMetadata?['name'] ?? '',
+            email: authUser.email ?? '',
+            phone: authUser.userMetadata?['phone'],
+            createdAt: DateTime.now(),
+            onboardingCompleted: false,
+          );
+          currentUser = await _supabaseService.insertUser(newUser);
+        } else {
+          throw Exception('User not found');
+        }
       }
 
       final updatedUser = currentUser.copyWith(

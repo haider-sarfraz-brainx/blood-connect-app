@@ -1,0 +1,1 @@
+ALTER TABLE public.blood_requests ADD COLUMN IF NOT EXISTS is_emergency BOOLEAN DEFAULT FALSE;

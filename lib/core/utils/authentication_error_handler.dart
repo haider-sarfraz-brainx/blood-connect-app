@@ -31,8 +31,9 @@ class AuthenticationErrorHandler {
 
     final errorString = error.toString().toLowerCase();
     
-    if (errorString.contains('email') && errorString.contains('already')) {
-      return 'This email is already registered. Please use a different email or sign in.';
+    if (errorString.contains('email') && 
+       (errorString.contains('already') || errorString.contains('exists'))) {
+      return 'This email address is already in use. Please sign in or use a different email.';
     }
 
     if (errorString.contains('incorrect current password')) {
@@ -69,11 +70,7 @@ class AuthenticationErrorHandler {
         return 'Invalid email or password. Please check your credentials.';
       
       case '422':
-        if (error.message.toLowerCase().contains('email')) {
-          return 'This email is already registered. Please sign in instead.';
-        }
-        return 'Invalid information provided. Please check and try again.';
-      
+          return 'This email address is already in use. Please sign in or use a different email.';
       case '429':
         return 'Too many requests. Please wait a moment and try again.';
       
@@ -103,6 +100,9 @@ class AuthenticationErrorHandler {
 
   String _handlePostgrestException(PostgrestException error) {
     if (error.code == '23505') {
+      if (error.message.toLowerCase().contains('email')) {
+        return 'This email address is already in use. Please sign in or use a different email.';
+      }
       return 'This information is already in use. Please use different details.';
     }
     

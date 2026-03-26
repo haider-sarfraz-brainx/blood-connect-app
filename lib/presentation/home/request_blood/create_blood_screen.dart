@@ -36,7 +36,8 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
   final _contactNumberController = TextEditingController();
   final _notesController = TextEditingController();
 
-  String? _selectedBloodGroup;
+    String? _selectedBloodGroup;
+    bool _isEmergency = false;
 
   late ThemeBloc themeBloc;
   late BloodRequestBloc bloodRequestBloc;
@@ -127,6 +128,7 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
         notes: _notesController.text.trim().isEmpty
             ? null
             : _notesController.text.trim(),
+        isEmergency: _isEmergency,
       ),
     );
   }
@@ -327,6 +329,37 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
                             Icons.edit_note_rounded,
                             color: baseTheme.primary,
                           ),
+                        ),
+
+                        const SizedBox(height: AppConstants.gap12Px),
+
+                        StatefulBuilder(
+                          builder: (context, setCheckState) {
+                            return CheckboxListTile(
+                              value: _isEmergency,
+                              onChanged: (value) {
+                                setCheckState(() {
+                                  _isEmergency = value ?? false;
+                                });
+                              },
+                              title: CustomText(
+                                text: 'Emergency Request',
+                                weight: FontWeight.w600,
+                                size: AppConstants.font14Px,
+                                translate: false,
+                              ),
+                              subtitle: CustomText(
+                                text: 'This will mark the request as urgent',
+                                weight: FontWeight.w400,
+                                size: AppConstants.font12Px,
+                                textColor: baseTheme.textColor.fixedOpacity(0.5),
+                                translate: false,
+                              ),
+                              activeColor: baseTheme.primary,
+                              contentPadding: EdgeInsets.zero,
+                              controlAffinity: ListTileControlAffinity.leading,
+                            );
+                          },
                         ),
 
                         const SizedBox(height: AppConstants.gap30Px),

@@ -5,6 +5,10 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../bloc/donor_bloc/donor_bloc.dart';
 import '../../../bloc/donor_bloc/donor_events.dart';
 import '../../../bloc/donor_bloc/donor_states.dart';
+import '../../../bloc/messaging_bloc/messaging_bloc.dart';
+import '../../../bloc/messaging_bloc/messaging_events.dart';
+import '../../../injection_container.dart';
+import './widgets/greeting_dialog.dart';
 import '../../../bloc/theme_bloc/theme_bloc.dart';
 import '../../../bloc/theme_bloc/theme_states.dart';
 import '../../../config/theme/base.dart';
@@ -59,7 +63,7 @@ class _DonorsScreenState extends State<DonorsScreen> {
         _filteredDonors = _allDonors.where((donor) {
           return donor.name.toLowerCase().contains(query) ||
               (donor.bloodGroup?.toLowerCase().contains(query) ?? false) ||
-              donor.phone.toLowerCase().contains(query) ||
+              (donor.phone?.toLowerCase().contains(query) ?? false) ||
               (donor.address?.toLowerCase().contains(query) ?? false);
         }).toList();
       }
@@ -204,15 +208,18 @@ class _DonorsScreenState extends State<DonorsScreen> {
           ListView.builder(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 80),
             itemCount: _filteredDonors.length,
-            itemBuilder: (context, index) => _AnimatedListItem(
-              index: index,
-              child: _DonorCard(
-                donor: _filteredDonors[index],
-                baseTheme: baseTheme,
-                onCall: () => _launchCall(_filteredDonors[index].phone),
-                onMessage: () => _launchSms(_filteredDonors[index].phone),
-              ),
-            ),
+            itemBuilder: (context, index) {
+              final donor = _filteredDonors[index];
+              return _AnimatedListItem(
+                index: index,
+                child: _DonorCard(
+                  donor: donor,
+                  baseTheme: baseTheme,
+                  onCall: donor.phone != null ? () => _launchCall(donor.phone!) : null,
+                  onMessage: donor.phone != null ? () => _launchSms(donor.phone!) : null,
+                ),
+              );
+            },
           ),
           if (_isLoading && _allDonors.isNotEmpty)
             Positioned(
@@ -315,14 +322,14 @@ class _AnimatedListItem extends StatelessWidget {
 class _DonorCard extends StatelessWidget {
   final UserModel donor;
   final BaseTheme baseTheme;
-  final VoidCallback onCall;
-  final VoidCallback onMessage;
+  final VoidCallback? onCall;
+  final VoidCallback? onMessage;
 
   const _DonorCard({
     required this.donor,
     required this.baseTheme,
-    required this.onCall,
-    required this.onMessage,
+    this.onCall,
+    this.onMessage,
   });
 
   Color get _bloodColor {
@@ -360,7 +367,6 @@ class _DonorCard extends StatelessWidget {
     final bloodColor = _bloodColor;
     final initial =
         donor.name.isNotEmpty ? donor.name[0].toUpperCase() : '?';
-    final subtitle = _subtitle;
 
     return Container(
       margin: const EdgeInsets.only(bottom: AppConstants.gap12Px),
@@ -432,20 +438,18 @@ class _DonorCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (subtitle != null) ...[
-                        const SizedBox(height: 3),
-                        Text(
-                          subtitle,
-                          style: TextStyle(
-                            fontFamily: AppConstants.fontFamilyLato,
-                            fontSize: AppConstants.font13Px,
-                            fontWeight: FontWeight.w500,
-                            color: baseTheme.textColor.fixedOpacity(0.5),
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                      const SizedBox(height: 3),
+                      Text(
+                        'Verified Donor',
+                        style: TextStyle(
+                          fontFamily: AppConstants.fontFamilyLato,
+                          fontSize: AppConstants.font13Px,
+                          fontWeight: FontWeight.w500,
+                          color: baseTheme.textColor.fixedOpacity(0.5),
                         ),
-                      ],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ],
                   ),
                 ),
@@ -486,52 +490,56 @@ class _DonorCard extends StatelessWidget {
 
             Wrap(
               spacing: AppConstants.gap16Px,
-              runSpacing: AppConstants.gap6Px,
+              runSpacing: AppConstants.gap8Px,
               children: [
-                if (donor.address != null && donor.address!.isNotEmpty)
-                  _MetaInfo(
-                    icon: Icons.location_on_rounded,
-                    text: donor.address!,
-                    iconColor: baseTheme.textColor.fixedOpacity(0.45),
-                    baseTheme: baseTheme,
-                    maxWidth: 160,
-                  ),
                 _MetaInfo(
-                  icon: Icons.phone_rounded,
-                  text: donor.phone,
+                  icon: Icons.person_outline_rounded,
+                  text: 'Gender hidden',
                   iconColor: baseTheme.textColor.fixedOpacity(0.45),
                   baseTheme: baseTheme,
+                ),
+                _MetaInfo(
+                  icon: Icons.event_rounded,
+                  text: 'Age hidden',
+                  iconColor: baseTheme.textColor.fixedOpacity(0.45),
+                  baseTheme: baseTheme,
+                ),
+                _MetaInfo(
+                  icon: Icons.location_on_outlined,
+                  text: 'Address hidden',
+                  iconColor: baseTheme.textColor.fixedOpacity(0.45),
+                  baseTheme: baseTheme,
+                  maxWidth: 140,
                 ),
               ],
             ),
 
-            const SizedBox(height: AppConstants.gap14Px),
-
-            Divider(
-              height: 1,
-              thickness: 1,
-              color: baseTheme.textColor.fixedOpacity(0.06),
-            ),
-
-            const SizedBox(height: AppConstants.gap14Px),
+            const SizedBox(height: AppConstants.gap16Px),
 
             Row(
               children: [
                 Expanded(
                   child: _ActionButton(
-                    icon: Icons.call_rounded,
-                    label: ViewConstants.call,
-                    color: const Color(0xFF2E7D32),
-                    onTap: onCall,
-                  ),
-                ),
-                const SizedBox(width: AppConstants.gap10Px),
-                Expanded(
-                  child: _ActionButton(
-                    icon: Icons.message_rounded,
-                    label: ViewConstants.message,
-                    color: const Color(0xFF1565C0),
-                    onTap: onMessage,
+                    icon: Icons.chat_bubble_outline_rounded,
+                    label: 'Request Contribution',
+                    color: baseTheme.primary,
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => GreetingDialog(
+                          recipientName: donor.name,
+                          onSend: (message) {
+                            sl<MessagingBloc>().add(CreateConversationEvent(
+                              recipientId: donor.id,
+                              initialMessage: message,
+                            ));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Request sent successfully!')),
+                            );
+                          },
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
@@ -542,6 +550,7 @@ class _DonorCard extends StatelessWidget {
     );
   }
 }
+
 
 class _MetaInfo extends StatelessWidget {
   final IconData icon;

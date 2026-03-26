@@ -1,4 +1,4 @@
-package com.example.training_projects
+package com.brainx.quickblood
 
 import io.flutter.embedding.android.FlutterActivity
 

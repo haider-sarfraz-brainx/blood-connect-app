@@ -887,67 +887,6 @@ class _SettingsTile extends StatelessWidget {
   }
 }
 
-class _SwitchTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final bool value;
-  final BaseTheme baseTheme;
-  final SettingsColors settingsColors;
-  final ValueChanged<bool> onChanged;
-
-  const _SwitchTile({
-    required this.icon,
-    required this.title,
-    required this.value,
-    required this.baseTheme,
-    required this.settingsColors,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: settingsColors.iconBackground,
-              borderRadius: BorderRadius.circular(AppConstants.radius10Px),
-            ),
-            alignment: Alignment.center,
-            child: Icon(icon, size: 18, color: settingsColors.icon),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Text(
-              title,
-              style: TextStyle(
-                fontFamily: AppConstants.fontFamilyLato,
-                fontSize: AppConstants.font16Px,
-                fontWeight: FontWeight.w500,
-                color: settingsColors.tileTitle,
-              ),
-            ),
-          ),
-          Transform.scale(
-            scale: 0.85,
-            child: Switch(
-              value: value,
-              onChanged: onChanged,
-              activeColor: baseTheme.primary,
-              thumbColor:
-                  MaterialStateProperty.all(settingsColors.switchThumb),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _DangerTile extends StatelessWidget {
   final IconData icon;
   final String title;

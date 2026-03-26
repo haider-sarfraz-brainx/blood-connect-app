@@ -16,6 +16,7 @@ class CreateBloodRequestEvent extends BloodRequestEvent {
   final String? hospitalAddress;
   final String contactNumber;
   final String? notes;
+  final bool isEmergency;
 
   const CreateBloodRequestEvent({
     required this.patientName,
@@ -25,6 +26,7 @@ class CreateBloodRequestEvent extends BloodRequestEvent {
     this.hospitalAddress,
     required this.contactNumber,
     this.notes,
+    this.isEmergency = false,
   });
 
   @override
@@ -36,6 +38,7 @@ class CreateBloodRequestEvent extends BloodRequestEvent {
         hospitalAddress,
         contactNumber,
         notes,
+        isEmergency,
       ];
 }
 

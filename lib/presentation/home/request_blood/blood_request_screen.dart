@@ -13,6 +13,8 @@ import '../../../core/constants/view_constants.dart';
 import '../../../core/extensions/color.dart';
 import '../../../data/managers/remote/supabase_service.dart';
 import '../../../data/models/blood_request_model.dart';
+import '../../../bloc/messaging_bloc/messaging_bloc.dart';
+import '../../../bloc/messaging_bloc/messaging_events.dart';
 import '../../../injection_container.dart';
 import '../../../widgets/custom_text.dart';
 import '../../../widgets/skeleton/request_card_skeleton.dart';
@@ -240,6 +242,7 @@ class _BloodRequestScreenState extends State<BloodRequestScreen>
                 request: requests[index],
                 baseTheme: baseTheme,
                 onTap: (){},
+                bloc: _bloc,
               ),
             ),
           ),
@@ -437,11 +440,13 @@ class _BloodRequestCard extends StatelessWidget {
   final BloodRequestModel request;
   final BaseTheme baseTheme;
   final VoidCallback onTap;
+  final BloodRequestBloc? bloc;
 
   const _BloodRequestCard({
     required this.request,
     required this.baseTheme,
     required this.onTap,
+    this.bloc,
   });
 
   Color get _bloodGroupColor {
@@ -478,6 +483,12 @@ class _BloodRequestCard extends StatelessWidget {
           Color(0xFFC62828),
           Icons.cancel_rounded,
         );
+      case BloodRequestStatus.offered:
+        return const _StatusStyle(
+          Color(0xFFFFF7E6),
+          Color(0xFFFAAD14),
+          Icons.local_offer_rounded,
+        );
     }
   }
 
@@ -491,6 +502,8 @@ class _BloodRequestCard extends StatelessWidget {
         return ViewConstants.fulfilled;
       case BloodRequestStatus.cancelled:
         return ViewConstants.cancelled;
+      case BloodRequestStatus.offered:
+        return 'Offered';
     }
   }
 
@@ -507,6 +520,9 @@ class _BloodRequestCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final statusStyle = _statusStyle;
     final bloodColor = _bloodGroupColor;
+    final currentUserId = sl<SupabaseService>().client.auth.currentUser?.id;
+    final isOwner = currentUserId == request.userId;
+    final isAccepted = request.status != BloodRequestStatus.pending && request.status != BloodRequestStatus.cancelled;
 
     return Container(
       margin: const EdgeInsets.only(bottom: AppConstants.gap12Px),
@@ -569,17 +585,38 @@ class _BloodRequestCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SizedBox(height: 2),
-                          Text(
-                            request.patientName,
-                            style: TextStyle(
-                              fontFamily: AppConstants.fontFamilyLato,
-                              fontSize: AppConstants.font16Px,
-                              fontWeight: FontWeight.w700,
-                              color: baseTheme.textColor,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  request.patientName,
+                                  style: TextStyle(
+                                    fontFamily: AppConstants.fontFamilyLato,
+                                    fontSize: AppConstants.font16Px,
+                                    fontWeight: FontWeight.w700,
+                                    color: baseTheme.textColor,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (request.isEmergency)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Text(
+                                    'URGENT',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
                           const SizedBox(height: 3),
                           Text(
@@ -661,12 +698,20 @@ class _BloodRequestCard extends StatelessWidget {
                         baseTheme: baseTheme,
                         maxWidth: 160,
                       ),
-                    _MetaInfo(
-                      icon: Icons.phone_rounded,
-                      text: request.contactNumber,
-                      iconColor: baseTheme.textColor.fixedOpacity(0.45),
-                      baseTheme: baseTheme,
-                    ),
+                    if (isAccepted || isOwner)
+                      _MetaInfo(
+                        icon: Icons.phone_rounded,
+                        text: request.contactNumber,
+                        iconColor: baseTheme.textColor.fixedOpacity(0.45),
+                        baseTheme: baseTheme,
+                      )
+                    else
+                      _MetaInfo(
+                        icon: Icons.lock_outline_rounded,
+                        text: 'Contact hidden',
+                        iconColor: baseTheme.textColor.fixedOpacity(0.45),
+                        baseTheme: baseTheme,
+                      ),
                   ],
                 ),
 
@@ -689,8 +734,97 @@ class _BloodRequestCard extends StatelessWidget {
                         color: baseTheme.textColor.fixedOpacity(0.35),
                       ),
                     ),
+                    if (request.isEmergency) ...[
+                      const Spacer(),
+                      Icon(
+                        Icons.warning_amber_rounded,
+                        size: 14,
+                        color: Colors.red.fixedOpacity(0.7),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'High Priority',
+                        style: TextStyle(
+                          fontFamily: AppConstants.fontFamilyLato,
+                          fontSize: AppConstants.font12Px,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.red.fixedOpacity(0.7),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
+
+                if (isOwner) ...[
+                  const SizedBox(height: AppConstants.gap16Px),
+                  Row(
+                    children: [
+                      if (request.status == BloodRequestStatus.offered) ...[
+                        Expanded(
+                          child: _OwnerActionButton(
+                            label: 'Reject',
+                            color: Colors.red,
+                            icon: Icons.close_rounded,
+                            onTap: () {
+                              bloc?.add(UpdateBloodRequestStatusEvent(
+                                requestId: request.id,
+                                status: BloodRequestStatus.pending,
+                              ));
+                            },
+                            baseTheme: baseTheme,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _OwnerActionButton(
+                            label: 'Accept Help',
+                            color: Colors.green,
+                            icon: Icons.check_rounded,
+                            onTap: () {
+                              bloc?.add(UpdateBloodRequestStatusEvent(
+                                requestId: request.id,
+                                status: BloodRequestStatus.inProgress,
+                              ));
+                              sl<MessagingBloc>().add(AcceptHelpEvent(request.id));
+                            },
+                            baseTheme: baseTheme,
+                          ),
+                        ),
+                      ] else ...[
+                        if (request.status == BloodRequestStatus.pending)
+                          Expanded(
+                            child: _OwnerActionButton(
+                              label: 'Cancel Request',
+                              color: Colors.red,
+                              icon: Icons.cancel_outlined,
+                              onTap: () {
+                                bloc?.add(UpdateBloodRequestStatusEvent(
+                                  requestId: request.id,
+                                  status: BloodRequestStatus.cancelled,
+                                ));
+                              },
+                              baseTheme: baseTheme,
+                            ),
+                          ),
+                        if (request.status == BloodRequestStatus.inProgress)
+                          Expanded(
+                            child: _OwnerActionButton(
+                              label: 'Mark Fulfilled',
+                              color: Colors.green,
+                              icon: Icons.check_circle_outline,
+                              onTap: () {
+                                bloc?.add(UpdateBloodRequestStatusEvent(
+                                  requestId: request.id,
+                                  status: BloodRequestStatus.fulfilled,
+                                ));
+                              },
+                              baseTheme: baseTheme,
+                            ),
+                          ),
+                      ],
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
@@ -699,6 +833,53 @@ class _BloodRequestCard extends StatelessWidget {
     );
   }
 }
+
+class _OwnerActionButton extends StatelessWidget {
+  final String label;
+  final Color color;
+  final IconData icon;
+  final VoidCallback onTap;
+  final BaseTheme baseTheme;
+
+  const _OwnerActionButton({
+    required this.label,
+    required this.color,
+    required this.icon,
+    required this.onTap,
+    required this.baseTheme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: color.withOpacity(0.08),
+      borderRadius: BorderRadius.circular(AppConstants.radius12Px),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppConstants.radius12Px),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 16, color: color),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 
 class _MetaInfo extends StatelessWidget {
   final IconData icon;

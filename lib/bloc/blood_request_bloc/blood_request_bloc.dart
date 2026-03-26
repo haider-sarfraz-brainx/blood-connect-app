@@ -41,6 +41,7 @@ class BloodRequestBloc extends Bloc<BloodRequestEvent, BloodRequestState> {
         contactNumber: event.contactNumber,
         status: BloodRequestStatus.pending,
         notes: event.notes,
+        isEmergency: event.isEmergency,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );

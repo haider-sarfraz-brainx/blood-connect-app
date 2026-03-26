@@ -1,9 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../bloc/authentication_bloc/authentication_bloc.dart';
+import '../../../bloc/authentication_bloc/authentication_states.dart';
 import '../../../bloc/blood_request_bloc/blood_request_bloc.dart';
 import '../../../bloc/blood_request_bloc/blood_request_events.dart';
 import '../../../bloc/blood_request_bloc/blood_request_states.dart';
+import '../../../bloc/messaging_bloc/messaging_bloc.dart';
+import '../../../bloc/messaging_bloc/messaging_events.dart';
 import '../../../bloc/theme_bloc/theme_bloc.dart';
 import '../../../bloc/theme_bloc/theme_states.dart';
 import '../../../config/theme/base.dart';
@@ -18,6 +22,7 @@ import '../../../widgets/bottom_sheets/blood_group_filter_bottom_sheet.dart';
 import '../../../widgets/custom_text.dart';
 import '../../../widgets/custom_text_field.dart';
 import '../../../widgets/skeleton/request_card_skeleton.dart';
+import '../donors/widgets/greeting_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -108,143 +113,30 @@ class _HomeScreenState extends State<HomeScreen> {
       BloodRequestModel request,
       BaseTheme baseTheme,
       ) async {
-    final confirmed = await showDialog<bool>(
+    showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.4),
-      builder: (context) {
-        return TweenAnimationBuilder<double>(
-          duration: const Duration(milliseconds: 280),
-          tween: Tween(begin: 0.0, end: 1.0),
-          curve: Curves.easeOutCubic,
-          builder: (context, value, child) => Opacity(
-            opacity: value,
-            child: Transform.translate(
-              offset: Offset(0, 20 * (1 - value)),
-              child: child,
-            ),
-          ),
-          child: Dialog(
-            backgroundColor: Colors.transparent,
-            insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Container(
-              decoration: BoxDecoration(
-                color: baseTheme.background,
-                borderRadius: BorderRadius.circular(AppConstants.radius20Px),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.12),
-                    blurRadius: 32,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: baseTheme.primary.withOpacity(0.10),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.water_drop_rounded,
-                          color: baseTheme.primary,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      CustomText(
-                        text: ViewConstants.acceptRequest,
-                        size: AppConstants.font18Px,
-                        weight: FontWeight.w700,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  CustomText(
-                    text:
-                    'Are you sure you want to accept the blood request for ${request.patientName}? The requester will be notified.',
-                    size: AppConstants.font14Px,
-                    weight: FontWeight.w400,
-                    textColor: baseTheme.textColor.fixedOpacity(0.55),
-                    height: 1.5,
-                    translate: false,
-                  ),
-                  const SizedBox(height: 20),
-                  Divider(
-                    height: 1,
-                    thickness: 1,
-                    color: baseTheme.textColor.fixedOpacity(0.08),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 13),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                AppConstants.radius12Px,
-                              ),
-                            ),
-                            side: BorderSide(
-                              color: baseTheme.textColor.fixedOpacity(0.18),
-                            ),
-                          ),
-                          child: CustomText(
-                            text: ViewConstants.cancel,
-                            size: AppConstants.font14Px,
-                            weight: FontWeight.w600,
-                            textColor: baseTheme.textColor.fixedOpacity(0.7),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: baseTheme.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 13),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                AppConstants.radius12Px,
-                              ),
-                            ),
-                            elevation: 0,
-                            shadowColor: Colors.transparent,
-                          ),
-                          child: CustomText(
-                            text: ViewConstants.accept,
-                            size: AppConstants.font14Px,
-                            weight: FontWeight.w700,
-                            textColor: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-    if (confirmed == true) {
-      bloodRequestBloc.add(AcceptBloodRequestEvent(requestId: request.id));
-    }
-  }
+      builder: (_) => GreetingDialog(
+        recipientName: request.patientName,
+        onSend: (message) {
+          
+          context.read<BloodRequestBloc>().add(UpdateBloodRequestStatusEvent(
+                requestId: request.id,
+                status: BloodRequestStatus.offered,
+              ));
 
+          sl<MessagingBloc>().add(CreateConversationEvent(
+            recipientId: request.userId,
+            requestId: request.id,
+            initialMessage: message,
+          ));
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Your help request with greeting has been sent!')),
+          );
+        },
+      ),
+    );
+  }
 
   @override
   void dispose() {
@@ -656,6 +548,12 @@ class _HomeRequestCard extends StatelessWidget {
           Color(0xFFC62828),
           Icons.cancel_rounded,
         );
+      case BloodRequestStatus.offered:
+        return const _StatusStyle(
+          Color(0xFFFFF7E6),
+          Color(0xFFFAAD14),
+          Icons.local_offer_rounded,
+        );
     }
   }
 
@@ -669,6 +567,8 @@ class _HomeRequestCard extends StatelessWidget {
         return ViewConstants.fulfilled;
       case BloodRequestStatus.cancelled:
         return ViewConstants.cancelled;
+      case BloodRequestStatus.offered:
+        return 'Offered';
     }
   }
 
@@ -843,7 +743,9 @@ class _HomeRequestCard extends StatelessWidget {
                       ),
                     _MetaInfo(
                       icon: Icons.phone_rounded,
-                      text: request.contactNumber,
+                      text: (request.status == BloodRequestStatus.pending || request.status == BloodRequestStatus.offered)
+                          ? 'Contact hidden'
+                          : request.contactNumber,
                       iconColor: baseTheme.textColor.fixedOpacity(0.45),
                       baseTheme: baseTheme,
                     ),

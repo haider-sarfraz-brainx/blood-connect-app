@@ -10,13 +10,13 @@ abstract class AuthenticationEvent extends Equatable {
 class SignUpEvent extends AuthenticationEvent {
   final String name;
   final String email;
-  final String phone;
+  final String? phone;
   final String password;
 
   const SignUpEvent({
     required this.name,
     required this.email,
-    required this.phone,
+    this.phone,
     required this.password,
   });
 
@@ -51,11 +51,11 @@ class CheckAuthenticationStatusEvent extends AuthenticationEvent {
 
 class UpdateProfileEvent extends AuthenticationEvent {
   final String name;
-  final String phone;
+  final String? phone;
 
   const UpdateProfileEvent({
     required this.name,
-    required this.phone,
+    this.phone,
   });
 
   @override

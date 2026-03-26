@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 
 enum BloodRequestStatus {
   pending,
+  offered,
   inProgress,
   fulfilled,
   cancelled;
@@ -11,6 +12,8 @@ enum BloodRequestStatus {
     switch (value.toLowerCase()) {
       case 'pending':
         return BloodRequestStatus.pending;
+      case 'offered':
+        return BloodRequestStatus.offered;
       case 'in-progress':
         return BloodRequestStatus.inProgress;
       case 'fulfilled':
@@ -26,6 +29,8 @@ enum BloodRequestStatus {
     switch (this) {
       case BloodRequestStatus.pending:
         return 'pending';
+      case BloodRequestStatus.offered:
+        return 'offered';
       case BloodRequestStatus.inProgress:
         return 'in-progress';
       case BloodRequestStatus.fulfilled:
@@ -48,6 +53,7 @@ class BloodRequestModel extends Equatable {
   final BloodRequestStatus status;
   final String? notes;
   final String? acceptedByUserId;
+  final bool isEmergency;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -63,6 +69,7 @@ class BloodRequestModel extends Equatable {
     required this.status,
     this.notes,
     this.acceptedByUserId,
+    this.isEmergency = false,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -80,6 +87,7 @@ class BloodRequestModel extends Equatable {
       'status': status.toDbString(),
       'notes': notes,
       'accepted_by_user_id': acceptedByUserId,
+      'is_emergency': isEmergency,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -98,6 +106,7 @@ class BloodRequestModel extends Equatable {
       status: BloodRequestStatus.fromString(map['status'] as String),
       notes: map['notes'] as String?,
       acceptedByUserId: map['accepted_by_user_id'] as String?,
+      isEmergency: map['is_emergency'] as bool? ?? false,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
     );
@@ -121,6 +130,7 @@ class BloodRequestModel extends Equatable {
     BloodRequestStatus? status,
     String? notes,
     String? acceptedByUserId,
+    bool? isEmergency,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -136,6 +146,7 @@ class BloodRequestModel extends Equatable {
       status: status ?? this.status,
       notes: notes ?? this.notes,
       acceptedByUserId: acceptedByUserId ?? this.acceptedByUserId,
+      isEmergency: isEmergency ?? this.isEmergency,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -154,7 +165,9 @@ class BloodRequestModel extends Equatable {
         status,
         notes,
         acceptedByUserId,
+        isEmergency,
         createdAt,
         updatedAt,
       ];
 }
+
