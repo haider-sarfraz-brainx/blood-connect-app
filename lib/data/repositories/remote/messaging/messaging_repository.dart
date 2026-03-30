@@ -46,4 +46,24 @@ class MessagingRepository {
   Future<void> updateConversationStatusByRequestId(String requestId, ConversationStatus status) {
     return _supabaseService.updateConversationStatusByRequestId(requestId, status);
   }
+
+  Future<void> blockConversation(String id) {
+    return _supabaseService.blockConversation(id);
+  }
+
+  Future<void> reportConversation({
+    required String conversationId,
+    required String reason,
+    String? details,
+  }) {
+    return _supabaseService.reportConversation(
+      conversationId: conversationId,
+      reason: reason,
+      details: details,
+    );
+  }
+
+  Future<void> deleteConversation(String id) {
+    return _supabaseService.deleteConversation(id);
+  }
 }

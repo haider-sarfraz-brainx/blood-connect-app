@@ -5,5 +5,6 @@ class DbConstants {
   static const String users = 'users';
   static const String planDetails = 'plan_details';
   static const String bloodRequests = 'blood_requests';
+  static const String reports = 'reports';
 
 }

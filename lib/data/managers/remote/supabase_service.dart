@@ -285,9 +285,30 @@ class SupabaseService {
       if (currentUserId == null) throw Exception('Not authenticated');
 
       final existing = await getConversationByParticipants(recipientId, requestId);
-      if (existing != null) return existing;
+      if (existing != null) {
+        if (existing.status == ConversationStatus.rejected) {
+          // Reset to pending so recipient sees it as a new request
+          final updated = await updateConversationStatus(existing.id, ConversationStatus.pending);
+          
+          // Add the new initial message to this existing conversation
+          await insertMessage(MessageModel(
+            id: '',
+            conversationId: updated.id,
+            senderId: currentUserId,
+            content: initialMessage,
+            createdAt: DateTime.now().toUtc(),
+          ));
+          
+          return updated;
+        }
+        return existing;
+      }
 
-      final now = DateTime.now();
+      // Fetch participants' names for denormalization
+      final initiator = await getUserById(currentUserId);
+      final recipient = await getUserById(recipientId);
+
+      final now = DateTime.now().toUtc();
       final conversation = ConversationModel(
         id: '',
         initiatorId: currentUserId,
@@ -297,6 +318,8 @@ class SupabaseService {
         lastMessage: initialMessage,
         updatedAt: now,
         createdAt: now,
+        initiatorName: initiator?.name,
+        recipientName: recipient?.name,
       );
 
       final map = conversation.toMap()..remove('id');
@@ -339,11 +362,29 @@ class SupabaseService {
   Future<ConversationModel> updateConversationStatus(String id, ConversationStatus status) async {
     final response = await client
         .from(DbConstants.conversations)
-        .update({'status': status.toDbString(), 'updated_at': DateTime.now().toIso8601String()})
+        .update({'status': status.toDbString(), 'updated_at': DateTime.now().toUtc().toIso8601String()})
         .eq('id', id)
         .select()
         .single();
-    return ConversationModel.fromMap(response);
+    
+    final conv = ConversationModel.fromMap(response);
+
+    // Sync with BloodRequest if applicable
+    if (conv.requestId != null) {
+      if (status == ConversationStatus.accepted) {
+        await client.from(DbConstants.bloodRequests).update({
+          'status': 'in-progress',
+          'accepted_by_user_id': client.auth.currentUser?.id,
+        }).eq('id', conv.requestId!);
+      } else if (status == ConversationStatus.rejected || status == ConversationStatus.pending) {
+        await client.from(DbConstants.bloodRequests).update({
+          'status': 'pending',
+          'accepted_by_user_id': null,
+        }).eq('id', conv.requestId!);
+      }
+    }
+
+    return conv;
   }
 
   Future<List<ConversationModel>> getConversations() async {
@@ -367,7 +408,7 @@ class SupabaseService {
     
     await client
         .from(DbConstants.conversations)
-        .update({'last_message': message.content, 'updated_at': DateTime.now().toIso8601String()})
+        .update({'last_message': message.content, 'updated_at': DateTime.now().toUtc().toIso8601String()})
         .eq('id', message.conversationId);
   }
 
@@ -387,9 +428,12 @@ class SupabaseService {
     final currentUserId = client.auth.currentUser?.id;
     if (currentUserId == null) return Stream.value([]);
 
+    // Note: stream() doesn't support joins natively to get names.
+    // For real-time names, we either need a view or we trigger a re-fetch.
     return client
         .from(DbConstants.conversations)
         .stream(primaryKey: ['id'])
+        .order('updated_at', ascending: false)
         .map((data) => data
             .where((e) => e['initiator_id'] == currentUserId || e['recipient_id'] == currentUserId)
             .map((e) => ConversationModel.fromMap(e))
@@ -400,15 +444,79 @@ class SupabaseService {
     return client
         .from(DbConstants.messages)
         .stream(primaryKey: ['id'])
-        .eq('conversation_id', conversationId)
-        .order('created_at', ascending: true)
-        .map((data) => data.map((e) => MessageModel.fromMap(e)).toList());
+        .map((data) => data
+            .where((e) => e['conversation_id'] == conversationId)
+            .map((e) => MessageModel.fromMap(e))
+            .toList());
   }
 
   Future<void> updateConversationStatusByRequestId(String requestId, ConversationStatus status) async {
     await client
         .from(DbConstants.conversations)
-        .update({'status': status.toDbString()})
+        .update({'status': status.toDbString(), 'updated_at': DateTime.now().toIso8601String()})
         .eq('request_id', requestId);
+
+    // Sync with BloodRequest status
+    if (status == ConversationStatus.accepted) {
+      await client.from(DbConstants.bloodRequests).update({
+        'status': 'in-progress',
+        'accepted_by_user_id': client.auth.currentUser?.id,
+      }).eq('id', requestId);
+    } else if (status == ConversationStatus.rejected) {
+      await client.from(DbConstants.bloodRequests).update({
+        'status': 'pending',
+        'accepted_by_user_id': null,
+      }).eq('id', requestId);
+    }
+  }
+
+  Future<void> blockConversation(String id) async {
+    await client
+        .from(DbConstants.conversations)
+        .update({'status': ConversationStatus.blocked.toDbString(), 'updated_at': DateTime.now().toIso8601String()})
+        .eq('id', id);
+  }
+
+  Future<void> reportConversation({
+    required String conversationId,
+    required String reason,
+    String? details,
+  }) async {
+    final currentUserId = client.auth.currentUser?.id;
+    if (currentUserId == null) return;
+
+    // Get conversation to identify reported user
+    final convResp = await client
+        .from(DbConstants.conversations)
+        .select()
+        .eq('id', conversationId)
+        .single();
+    
+    final initiatorId = convResp['initiator_id'];
+    final recipientId = convResp['recipient_id'];
+    
+    final reportedId = initiatorId == currentUserId ? recipientId : initiatorId;
+
+    // Insert into reports table
+    await client.from(DbConstants.reports).insert({
+      'reporter_id': currentUserId,
+      'reported_id': reportedId,
+      'conversation_id': conversationId,
+      'reason': reason,
+      'details': details,
+    });
+
+    // Mark as reported in conversations table
+    await client
+        .from(DbConstants.conversations)
+        .update({'status': ConversationStatus.reported.toDbString(), 'updated_at': DateTime.now().toUtc().toIso8601String()})
+        .eq('id', conversationId);
+  }
+
+  Future<void> deleteConversation(String id) async {
+    await client
+        .from(DbConstants.conversations)
+        .delete()
+        .eq('id', id);
   }
 }

@@ -44,6 +44,15 @@ class AcceptHelpEvent extends MessagingEvent {
   List<Object?> get props => [requestId];
 }
 
+class DeclineConversationEvent extends MessagingEvent {
+  final String conversationId;
+
+  const DeclineConversationEvent(this.conversationId);
+
+  @override
+  List<Object?> get props => [conversationId];
+}
+
 class SendMessageEvent extends MessagingEvent {
   final String conversationId;
   final String content;
@@ -67,3 +76,38 @@ class StreamMessagesEvent extends MessagingEvent {
   @override
   List<Object?> get props => [conversationId];
 }
+
+class BlockConversationEvent extends MessagingEvent {
+  final String conversationId;
+
+  const BlockConversationEvent(this.conversationId);
+
+  @override
+  List<Object?> get props => [conversationId];
+}
+
+class ReportConversationEvent extends MessagingEvent {
+  final String conversationId;
+  final String reason;
+  final String? details;
+
+  const ReportConversationEvent({
+    required this.conversationId,
+    required this.reason,
+    this.details,
+  });
+
+  @override
+  List<Object?> get props => [conversationId, reason, details];
+}
+
+class DeleteConversationEvent extends MessagingEvent {
+  final String conversationId;
+
+  const DeleteConversationEvent(this.conversationId);
+
+  @override
+  List<Object?> get props => [conversationId];
+}
+
+class StopStreamMessagesEvent extends MessagingEvent {}

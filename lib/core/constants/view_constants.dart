@@ -150,6 +150,7 @@ class ViewConstants {
   static const String accept = 'accept';
   static const String acceptRequest = 'acceptRequest';
   static const String requestAccepted = 'requestAccepted';
+  static const String helpRequestSent = 'helpRequestSent';
   static const String search = 'search';
   static const String searchRequests = 'searchRequests';
   static const String noRequestsAvailable = 'noRequestsAvailable';
@@ -165,11 +166,45 @@ class ViewConstants {
   static const String searchDonors = 'searchDonors';
   static const String noDonorsFound = 'noDonorsFound';
   static const String noDonorsAvailable = 'noDonorsAvailable';
+  static const String verifiedDonor = 'verifiedDonor';
   static const String call = 'call';
   static const String message = 'message';
   static const String availableDonors = 'availableDonors';
   static const String lastDonated = 'lastDonated';
   static const String yearsOld = 'yearsOld';
   static const String noDonationRecord = 'noDonationRecord';
+
+  static const String messages = 'messages';
+  static const String chats = 'chats';
+  static const String requests = 'requests';
+  static const String messageRequests = 'messageRequests';
+  static const String noActiveChats = 'noActiveChats';
+  static const String noMessageRequests = 'noMessageRequests';
+  static const String somethingWentWrong = 'somethingWentWrong';
+  static const String startConversation = 'startConversation';
+  static const String decline = 'decline';
+  static const String block = 'block';
+  static const String report = 'report';
+  static const String deleteConversation = 'deleteConversation';
+  static const String userDetails = 'userDetails';
+  static const String chatLocked = 'chatLocked';
+  static const String donorWantsToHelp = 'donorWantsToHelp';
+  static const String chatLockedSubtitle = 'chatLockedSubtitle';
+  static const String gotIt = 'gotIt';
+  static const String activeConnection = 'activeConnection';
+  static const String pendingAcceptance = 'pendingAcceptance';
+  static const String rejected = 'rejected';
+  static const String reportUser = 'reportUser';
+  static const String blockUser = 'blockUser';
+  static const String deleteChat = 'deleteChat';
+  static const String harassment = 'harassment';
+  static const String falseInfo = 'falseInfo';
+  static const String suspicious = 'suspicious';
+  static const String spam = 'spam';
+  static const String other = 'other';
+  static const String reasonPlaceholder = 'reasonPlaceholder';
+  static const String submitReport = 'submitReport';
+  static const String reportSuccess = 'reportSuccess';
+  static const String noMessages = 'noMessages';
 
 }

@@ -6,6 +6,7 @@ import '../../../bloc/messaging_bloc/messaging_events.dart';
 import '../../../bloc/messaging_bloc/messaging_states.dart';
 import '../../../bloc/theme_bloc/theme_bloc.dart';
 import '../../../data/models/conversation_model.dart';
+import '../../../data/managers/local/session_manager.dart';
 import '../../../config/theme/base.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/view_constants.dart';
@@ -21,9 +22,13 @@ class ConversationListScreen extends StatefulWidget {
 }
 
 class _ConversationListScreenState extends State<ConversationListScreen> {
+  late String _currentUserId;
+  bool _showingRequests = false;
+
   @override
   void initState() {
     super.initState();
+    _currentUserId = sl<SessionManager>().getUser()?.id ?? '';
     sl<MessagingBloc>().add(StreamConversationsEvent());
   }
 
@@ -34,8 +39,14 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
     return Scaffold(
       backgroundColor: baseTheme.background,
       appBar: AppBar(
+        leading: _showingRequests 
+            ? IconButton(
+                icon: Icon(Icons.arrow_back_ios_new_rounded, color: baseTheme.textColor),
+                onPressed: () => setState(() => _showingRequests = false),
+              )
+            : null,
         title: Text(
-          'Messages'.tr(),
+          (_showingRequests ? ViewConstants.requests : ViewConstants.messages).tr(),
           style: TextStyle(
             fontFamily: AppConstants.fontFamilyLato,
             fontSize: AppConstants.font20Px,
@@ -51,44 +62,96 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
       body: BlocBuilder<MessagingBloc, MessagingState>(
         bloc: sl<MessagingBloc>(),
         builder: (context, state) {
-          if (state is MessagingLoading) {
+          if (state.isLoading && state.conversations.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (state is ConversationsLoaded) {
-            final conversations = state.conversations;
-            if (conversations.isEmpty) {
-              return _buildEmptyState(baseTheme);
-            }
-            return ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              itemCount: conversations.length,
-              itemBuilder: (context, index) {
-                final conv = conversations[index];
-                return _ConversationCard(
-                  conversation: conv,
-                  baseTheme: baseTheme,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ChatScreen(conversation: conv),
-                      ),
-                    );
-                  },
-                );
-              },
-            );
+          
+          final allConversations = state.conversations;
+          
+          final chats = allConversations.where((c) => 
+            c.status == ConversationStatus.accepted || 
+            (c.status == ConversationStatus.pending && c.initiatorId == _currentUserId)
+          ).toList();
+          
+          final requests = allConversations.where((c) => 
+            c.status == ConversationStatus.pending && c.recipientId == _currentUserId
+          ).toList();
+
+          if (_showingRequests) {
+            return _buildRequestList(requests, baseTheme);
           }
-          if (state is MessagingError) {
-             return Center(child: Text(state.message));
+
+          if (state.error != null && allConversations.isEmpty) {
+             return Center(child: Text(state.error!));
           }
-          return Center(child: Text('Something went wrong'.tr()));
+
+          return _buildMainList(chats, requests.length, baseTheme);
         },
       ),
     );
   }
 
-  Widget _buildEmptyState(BaseTheme baseTheme) {
+  Widget _buildMainList(List<ConversationModel> conversations, int requestCount, BaseTheme baseTheme) {
+    final hasConversations = conversations.isNotEmpty || requestCount > 0;
+    
+    if (!hasConversations) {
+      return _buildEmptyState(baseTheme, ViewConstants.noActiveChats);
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      itemCount: (requestCount > 0 ? 1 : 0) + conversations.length,
+      itemBuilder: (context, index) {
+        if (requestCount > 0 && index == 0) {
+          return _MessageRequestsCard(
+            count: requestCount,
+            baseTheme: baseTheme,
+            onTap: () => setState(() => _showingRequests = true),
+          );
+        }
+
+        final convIndex = requestCount > 0 ? index - 1 : index;
+        final conv = conversations[convIndex];
+        return _ConversationCard(
+          conversation: conv,
+          baseTheme: baseTheme,
+          currentUserId: _currentUserId,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => ChatScreen(conversation: conv)),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildRequestList(List<ConversationModel> requests, BaseTheme baseTheme) {
+    if (requests.isEmpty) {
+      return _buildEmptyState(baseTheme, ViewConstants.noMessageRequests);
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      itemCount: requests.length,
+      itemBuilder: (context, index) {
+        final conv = requests[index];
+        return _RequestCard(
+          conversation: conv,
+          baseTheme: baseTheme,
+          currentUserId: _currentUserId,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => ChatScreen(conversation: conv)),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildEmptyState(BaseTheme baseTheme, String message) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -107,25 +170,12 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
           ),
           const SizedBox(height: 24),
           Text(
-            'No conversations yet'.tr(),
+            message.tr(),
             style: TextStyle(
               fontFamily: AppConstants.fontFamilyLato,
               fontSize: AppConstants.font18Px,
               fontWeight: FontWeight.w600,
               color: baseTheme.textColor,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 48),
-            child: Text(
-              'Your messages and help requests will appear here.'.tr(),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: AppConstants.fontFamilyLato,
-                fontSize: AppConstants.font14Px,
-                color: baseTheme.textColor.fixedOpacity(0.5),
-              ),
             ),
           ),
         ],
@@ -134,22 +184,98 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
   }
 }
 
-class _ConversationCard extends StatelessWidget {
-  final ConversationModel conversation;
+class _MessageRequestsCard extends StatelessWidget {
+  final int count;
   final BaseTheme baseTheme;
   final VoidCallback onTap;
 
-  const _ConversationCard({
-    required this.conversation,
+  const _MessageRequestsCard({
+    required this.count,
     required this.baseTheme,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final title = conversation.requestId != null ? 'Help Request Offer' : 'Donor Contact';
-    final subtitle = conversation.lastMessage ?? 'No messages yet';
-    final isUnread = conversation.status == ConversationStatus.pending;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: baseTheme.white,
+        borderRadius: BorderRadius.circular(AppConstants.radius16Px),
+        shadowColor: Colors.black.withOpacity(0.05),
+        elevation: 2,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppConstants.radius16Px),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.move_to_inbox_rounded, color: Colors.orange, size: 24),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        ViewConstants.messageRequests.tr(),
+                        style: TextStyle(
+                          fontFamily: AppConstants.fontFamilyLato,
+                          fontSize: AppConstants.font14Px,
+                          fontWeight: FontWeight.w700,
+                          color: baseTheme.textColor,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '$count ${count > 1 ? ViewConstants.requests.tr() : ViewConstants.requests.tr().substring(0, ViewConstants.requests.tr().length - 1)}',
+                        style: TextStyle(
+                          fontFamily: AppConstants.fontFamilyLato,
+                          fontSize: AppConstants.font13Px,
+                          color: baseTheme.textColor.fixedOpacity(0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.arrow_forward_ios_rounded, size: 16, color: baseTheme.textColor.fixedOpacity(0.3)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ConversationCard extends StatelessWidget {
+  final ConversationModel conversation;
+  final BaseTheme baseTheme;
+  final String currentUserId;
+  final VoidCallback onTap;
+
+  const _ConversationCard({
+    required this.conversation,
+    required this.baseTheme,
+    required this.currentUserId,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final otherName = conversation.initiatorId == currentUserId 
+        ? (conversation.recipientName ?? ViewConstants.message.tr()) 
+        : (conversation.initiatorName ?? ViewConstants.message.tr());
+    
+    final subtitle = conversation.lastMessage ?? ViewConstants.noMessages.tr();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -165,41 +291,22 @@ class _ConversationCard extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                Stack(
-                  children: [
-                    Container(
-                      width: 54,
-                      height: 54,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            baseTheme.primary.withOpacity(0.15),
-                            baseTheme.primary.withOpacity(0.05),
-                          ],
-                        ),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.person_rounded,
-                        color: baseTheme.primary,
-                        size: 28,
-                      ),
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: baseTheme.primary.withOpacity(0.1),
+                    shape: BoxShape.circle,),
+                  alignment: Alignment.center,
+                  child: Text(
+                    otherName.isNotEmpty ? otherName[0].toUpperCase() : '?',
+                    style: TextStyle(
+                      fontFamily: AppConstants.fontFamilyLato,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: baseTheme.primary,
                     ),
-                    if (isUnread)
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        child: Container(
-                          width: 14,
-                          height: 14,
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
-                          ),
-                        ),
-                      ),
-                  ],
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -211,7 +318,7 @@ class _ConversationCard extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              title,
+                              otherName,
                               style: TextStyle(
                                 fontFamily: AppConstants.fontFamilyLato,
                                 fontSize: AppConstants.font14Px,
@@ -232,7 +339,7 @@ class _ConversationCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       Text(
                         subtitle,
                         style: TextStyle(
@@ -246,12 +353,6 @@ class _ConversationCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 14,
-                  color: baseTheme.textColor.fixedOpacity(0.2),
-                ),
               ],
             ),
           ),
@@ -261,15 +362,193 @@ class _ConversationCard extends StatelessWidget {
   }
 
   String _formatTime(DateTime dt) {
-    final now = DateTime.now();
-    final difference = now.difference(dt);
+    return DateFormat('HH:mm').format(dt);
+  }
+}
 
-    if (difference.inDays == 0) {
-      return DateFormat('HH:mm').format(dt);
-    } else if (difference.inDays < 7) {
-      return DateFormat('E').format(dt);
-    } else {
-      return DateFormat('dd/MM').format(dt);
-    }
+class _RequestCard extends StatelessWidget {
+  final ConversationModel conversation;
+  final BaseTheme baseTheme;
+  final String currentUserId;
+  final VoidCallback onTap;
+
+  const _RequestCard({
+    required this.conversation,
+    required this.baseTheme,
+    required this.currentUserId,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final otherName = conversation.initiatorId == currentUserId 
+        ? (conversation.recipientName ?? ViewConstants.message.tr()) 
+        : (conversation.initiatorName ?? ViewConstants.message.tr());
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: baseTheme.white,
+        borderRadius: BorderRadius.circular(AppConstants.radius16Px),
+        shadowColor: Colors.black.withOpacity(0.04),
+        elevation: 2,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppConstants.radius16Px),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.1),
+                        shape: BoxShape.circle,),
+                      alignment: Alignment.center,
+                      child: Text(
+                        otherName.isNotEmpty ? otherName[0].toUpperCase() : '?',
+                        style: TextStyle(
+                          fontFamily: AppConstants.fontFamilyLato,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.orange,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            otherName,
+                            style: TextStyle(
+                              fontFamily: AppConstants.fontFamilyLato,
+                              fontSize: AppConstants.font14Px,
+                              fontWeight: FontWeight.w700,
+                              color: baseTheme.textColor,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            DateFormat('MMM dd, HH:mm').format(conversation.createdAt),
+                            style: TextStyle(
+                              fontFamily: AppConstants.fontFamilyLato,
+                              fontSize: AppConstants.font10Px,
+                              color: baseTheme.textColor.fixedOpacity(0.4),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  conversation.lastMessage ?? ViewConstants.donorWantsToHelp.tr(),
+                  style: TextStyle(
+                    fontFamily: AppConstants.fontFamilyLato,
+                    fontSize: AppConstants.font13Px,
+                    color: baseTheme.textColor.fixedOpacity(0.7),
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              backgroundColor: baseTheme.background,
+                              title: Text(
+                                'Decline Request',
+                                style: TextStyle(color: baseTheme.textColor, fontFamily: AppConstants.fontFamilyLato, fontWeight: FontWeight.bold),
+                              ),
+                              content: Text(
+                                'Are you sure you want to decline this request?',
+                                style: TextStyle(color: baseTheme.textColor, fontFamily: AppConstants.fontFamilyLato),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx, false),
+                                  child: Text(ViewConstants.cancel.tr(), style: TextStyle(color: baseTheme.textColor.withOpacity(0.6))),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () => Navigator.pop(ctx, true),
+                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                  child: Text(ViewConstants.decline.tr(), style: const TextStyle(color: Colors.white)),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirm == true) {
+                            sl<MessagingBloc>().add(DeclineConversationEvent(conversation.id));
+                          }
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.red,
+                          side: BorderSide(color: Colors.red.withOpacity(0.3)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: Text(ViewConstants.decline.tr()),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              backgroundColor: baseTheme.background,
+                              title: Text(
+                                'Accept Request',
+                                style: TextStyle(color: baseTheme.textColor, fontFamily: AppConstants.fontFamilyLato, fontWeight: FontWeight.bold),
+                              ),
+                              content: Text(
+                                'Are you sure you want to accept this request?',
+                                style: TextStyle(color: baseTheme.textColor, fontFamily: AppConstants.fontFamilyLato),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx, false),
+                                  child: Text(ViewConstants.cancel.tr(), style: TextStyle(color: baseTheme.textColor.withOpacity(0.6))),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () => Navigator.pop(ctx, true),
+                                  style: ElevatedButton.styleFrom(backgroundColor: baseTheme.primary),
+                                  child: Text(ViewConstants.accept.tr(), style: const TextStyle(color: Colors.white)),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirm == true) {
+                            sl<MessagingBloc>().add(AcceptConversationEvent(conversation.id));
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: baseTheme.primary,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: Text(ViewConstants.accept.tr()),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

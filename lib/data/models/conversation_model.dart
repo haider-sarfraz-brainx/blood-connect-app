@@ -4,6 +4,8 @@ enum ConversationStatus {
   pending,
   accepted,
   rejected,
+  blocked,
+  reported,
 }
 
 extension ConversationStatusX on ConversationStatus {
@@ -26,6 +28,10 @@ class ConversationModel extends Equatable {
   final String? lastMessage;
   final DateTime updatedAt;
   final DateTime createdAt;
+  
+  // Display names fetched from join
+  final String? initiatorName;
+  final String? recipientName;
 
   const ConversationModel({
     required this.id,
@@ -36,6 +42,8 @@ class ConversationModel extends Equatable {
     this.lastMessage,
     required this.updatedAt,
     required this.createdAt,
+    this.initiatorName,
+    this.recipientName,
   });
 
   Map<String, dynamic> toMap() {
@@ -48,10 +56,16 @@ class ConversationModel extends Equatable {
       'last_message': lastMessage,
       'updated_at': updatedAt.toIso8601String(),
       'created_at': createdAt.toIso8601String(),
+      'initiator_name': initiatorName,
+      'recipient_name': recipientName,
     };
   }
 
   factory ConversationModel.fromMap(Map<String, dynamic> map) {
+    // Handle join results if present
+    final initiatorData = map['initiator'];
+    final recipientData = map['recipient'];
+    
     return ConversationModel(
       id: map['id'] as String,
       initiatorId: map['initiator_id'] as String,
@@ -61,6 +75,8 @@ class ConversationModel extends Equatable {
       lastMessage: map['last_message'] as String?,
       updatedAt: DateTime.parse(map['updated_at'] as String),
       createdAt: DateTime.parse(map['created_at'] as String),
+      initiatorName: initiatorData is Map ? initiatorData['name'] as String? : map['initiator_name'] as String?,
+      recipientName: recipientData is Map ? recipientData['name'] as String? : map['recipient_name'] as String?,
     );
   }
 
@@ -73,6 +89,8 @@ class ConversationModel extends Equatable {
     String? lastMessage,
     DateTime? updatedAt,
     DateTime? createdAt,
+    String? initiatorName,
+    String? recipientName,
   }) {
     return ConversationModel(
       id: id ?? this.id,
@@ -83,6 +101,8 @@ class ConversationModel extends Equatable {
       lastMessage: lastMessage ?? this.lastMessage,
       updatedAt: updatedAt ?? this.updatedAt,
       createdAt: createdAt ?? this.createdAt,
+      initiatorName: initiatorName ?? this.initiatorName,
+      recipientName: recipientName ?? this.recipientName,
     );
   }
 
@@ -96,5 +116,7 @@ class ConversationModel extends Equatable {
         lastMessage,
         updatedAt,
         createdAt,
+        initiatorName,
+        recipientName,
       ];
 }

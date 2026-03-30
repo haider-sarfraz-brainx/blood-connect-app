@@ -7,7 +7,9 @@ import '../../../bloc/donor_bloc/donor_events.dart';
 import '../../../bloc/donor_bloc/donor_states.dart';
 import '../../../bloc/messaging_bloc/messaging_bloc.dart';
 import '../../../bloc/messaging_bloc/messaging_events.dart';
+import '../../../bloc/messaging_bloc/messaging_states.dart';
 import '../../../injection_container.dart';
+import '../messaging/chat_screen.dart';
 import './widgets/greeting_dialog.dart';
 import '../../../bloc/theme_bloc/theme_bloc.dart';
 import '../../../bloc/theme_bloc/theme_states.dart';
@@ -82,39 +84,41 @@ class _DonorsScreenState extends State<DonorsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<DonorBloc, DonorState>(
-      bloc: _bloc,
-      listener: (context, state) {
-        if (state is DonorLoading) {
-          setState(() => _isLoading = true);
-        } else if (state is DonorsLoaded) {
-          setState(() {
-            _isLoading = false;
-            _allDonors = state.donors;
-            _filteredDonors = List.from(state.donors);
-            if (_searchController.text.isNotEmpty) _applySearch();
-          });
-        } else if (state is DonorError) {
-          setState(() => _isLoading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                state.message,
-                style: const TextStyle(color: Colors.white),
-              ),
-              backgroundColor: Colors.red,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.circular(AppConstants.radius12Px),
-              ),
-            ),
-          );
-        }
-      },
-      builder: (context, state) {
-        return BlocBuilder<ThemeBloc, ThemeState>(
-          builder: (context, themeState) {
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<DonorBloc, DonorState>(
+          bloc: _bloc,
+          listener: (context, state) {
+            if (state is DonorLoading) {
+              setState(() => _isLoading = true);
+            } else if (state is DonorsLoaded) {
+              setState(() {
+                _isLoading = false;
+                _allDonors = state.donors;
+                _filteredDonors = List.from(state.donors);
+                if (_searchController.text.isNotEmpty) _applySearch();
+              });
+            } else if (state is DonorError) {
+              setState(() => _isLoading = false);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    state.message,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppConstants.radius12Px),
+                  ),
+                ),
+              );
+            }
+          },
+        ),
+      ],
+      child: BlocBuilder<ThemeBloc, ThemeState>(
+        builder: (context, themeState) {
             final baseTheme = themeState.baseTheme;
             final isInitialLoad = _isLoading && _allDonors.isEmpty;
 
@@ -186,8 +190,7 @@ class _DonorsScreenState extends State<DonorsScreen> {
               ),
             );
           },
-        );
-      },
+        ),
     );
   }
 
@@ -440,7 +443,7 @@ class _DonorCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        'Verified Donor',
+                        ViewConstants.verifiedDonor.tr(),
                         style: TextStyle(
                           fontFamily: AppConstants.fontFamilyLato,
                           fontSize: AppConstants.font13Px,
@@ -534,7 +537,17 @@ class _DonorCard extends StatelessWidget {
                               initialMessage: message,
                             ));
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Request sent successfully!')),
+                              SnackBar(
+                                content: Text(
+                                  ViewConstants.helpRequestSent.tr(),
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                                backgroundColor: Colors.green,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(AppConstants.radius12Px),
+                                ),
+                              ),
                             );
                           },
                         ),
@@ -609,13 +622,13 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: color.withOpacity(0.08),
+      color: color.fixedOpacity(0.08),
       borderRadius: BorderRadius.circular(AppConstants.radius12Px),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppConstants.radius12Px),
-        splashColor: color.withOpacity(0.16),
-        highlightColor: color.withOpacity(0.06),
+        splashColor: color.fixedOpacity(0.16),
+        highlightColor: color.fixedOpacity(0.06),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 11),
           child: Row(

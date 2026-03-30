@@ -8,7 +8,9 @@ import '../../../bloc/blood_request_bloc/blood_request_events.dart';
 import '../../../bloc/blood_request_bloc/blood_request_states.dart';
 import '../../../bloc/messaging_bloc/messaging_bloc.dart';
 import '../../../bloc/messaging_bloc/messaging_events.dart';
+import '../../../bloc/messaging_bloc/messaging_states.dart';
 import '../../../bloc/theme_bloc/theme_bloc.dart';
+import '../messaging/chat_screen.dart';
 import '../../../bloc/theme_bloc/theme_states.dart';
 import '../../../config/theme/base.dart';
 import '../../../core/constants/app_constants.dart';
@@ -131,7 +133,17 @@ class _HomeScreenState extends State<HomeScreen> {
           ));
           
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Your help request with greeting has been sent!')),
+            SnackBar(
+              content: CustomText(
+                text: ViewConstants.helpRequestSent,
+                textColor: Colors.white,
+              ),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppConstants.radius12Px),
+              ),
+            ),
           );
         },
       ),
@@ -147,62 +159,66 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<BloodRequestBloc, BloodRequestState>(
-      bloc: bloodRequestBloc,
-      listener: (context, state) {
-        if (state is BloodRequestUpdated) {
-          final updatedRequest = state.request;
-          final index =
-              _allRequests.indexWhere((r) => r.id == updatedRequest.id);
-          if (index != -1) {
-            setState(() {
-              _allRequests[index] = updatedRequest;
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<BloodRequestBloc, BloodRequestState>(
+          bloc: bloodRequestBloc,
+          listener: (context, state) {
+            if (state is BloodRequestUpdated) {
+              final updatedRequest = state.request;
+              final index =
+                  _allRequests.indexWhere((r) => r.id == updatedRequest.id);
+              if (index != -1) {
+                setState(() {
+                  _allRequests[index] = updatedRequest;
+                  _filterRequests();
+                });
+              }
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: CustomText(
+                    text: ViewConstants.requestAccepted,
+                    textColor: Colors.white,
+                  ),
+                  backgroundColor: Colors.green,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppConstants.radius12Px),
+                  ),
+                ),
+              );
+              _loadRequests();
+            } else if (state is BloodRequestError) {
+              if (_isLoadingHomeRequests) _isLoadingHomeRequests = false;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: CustomText(
+                    text: state.message,
+                    textColor: Colors.white,
+                    translate: false,
+                  ),
+                  backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppConstants.radius12Px),
+                  ),
+                ),
+              );
+            } else if (state is BloodRequestsLoaded && _isLoadingHomeRequests) {
+              final userIdToExclude =
+                  _currentUserId ?? supabaseService.client.auth.currentUser?.id;
+              _allRequests = state.requests.where((r) {
+                if (userIdToExclude != null && userIdToExclude.isNotEmpty) {
+                  return r.userId != userIdToExclude;
+                }
+                return true;
+              }).toList();
+              _isLoadingHomeRequests = false;
               _filterRequests();
-            });
-          }
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: CustomText(
-                text: ViewConstants.requestAccepted,
-                textColor: Colors.white,
-              ),
-              backgroundColor: Colors.green,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppConstants.radius12Px),
-              ),
-            ),
-          );
-          _loadRequests();
-        } else if (state is BloodRequestError) {
-          if (_isLoadingHomeRequests) _isLoadingHomeRequests = false;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: CustomText(
-                text: state.message,
-                textColor: Colors.white,
-                translate: false,
-              ),
-              backgroundColor: Colors.red,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppConstants.radius12Px),
-              ),
-            ),
-          );
-        } else if (state is BloodRequestsLoaded && _isLoadingHomeRequests) {
-          final userIdToExclude =
-              _currentUserId ?? supabaseService.client.auth.currentUser?.id;
-          _allRequests = state.requests.where((r) {
-            if (userIdToExclude != null && userIdToExclude.isNotEmpty) {
-              return r.userId != userIdToExclude;
             }
-            return true;
-          }).toList();
-          _isLoadingHomeRequests = false;
-          _filterRequests();
-        }
-      },
+          },
+        ),
+      ],
       child: BlocBuilder<ThemeBloc, ThemeState>(
         builder: (context, themeState) {
           final baseTheme = themeState.baseTheme;

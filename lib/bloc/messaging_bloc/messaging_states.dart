@@ -2,49 +2,46 @@ import 'package:equatable/equatable.dart';
 import '../../data/models/conversation_model.dart';
 import '../../data/models/message_model.dart';
 
-abstract class MessagingState extends Equatable {
-  const MessagingState();
-
-  @override
-  List<Object?> get props => [];
-}
-
-class MessagingInitial extends MessagingState {}
-
-class MessagingLoading extends MessagingState {}
-
-class ConversationsLoaded extends MessagingState {
+class MessagingState extends Equatable {
   final List<ConversationModel> conversations;
-
-  const ConversationsLoaded(this.conversations);
-
-  @override
-  List<Object?> get props => [conversations];
-}
-
-class MessagesLoaded extends MessagingState {
   final List<MessageModel> messages;
+  final bool isLoading;
+  final bool isActionLoading;
+  final String? error;
+  final ConversationModel? createdConversation;
 
-  const MessagesLoaded(this.messages);
+  const MessagingState({
+    this.conversations = const [],
+    this.messages = const [],
+    this.isLoading = false,
+    this.isActionLoading = false,
+    this.error,
+    this.createdConversation,
+  });
+
+  MessagingState copyWith({
+    List<ConversationModel>? conversations,
+    List<MessageModel>? messages,
+    bool? isLoading,
+    bool? isActionLoading,
+    String? error,
+    ConversationModel? createdConversation,
+    bool clearCreatedConversation = false,
+  }) {
+    return MessagingState(
+      conversations: conversations ?? this.conversations,
+      messages: messages ?? this.messages,
+      isLoading: isLoading ?? this.isLoading,
+      isActionLoading: isActionLoading ?? this.isActionLoading,
+      error: error,
+      createdConversation: clearCreatedConversation ? null : (createdConversation ?? this.createdConversation),
+    );
+  }
 
   @override
-  List<Object?> get props => [messages];
+  List<Object?> get props => [conversations, messages, isLoading, isActionLoading, error, createdConversation];
 }
 
-class MessagingError extends MessagingState {
-  final String message;
-
-  const MessagingError(this.message);
-
-  @override
-  List<Object?> get props => [message];
-}
-
-class ConversationCreated extends MessagingState {
-  final ConversationModel conversation;
-
-  const ConversationCreated(this.conversation);
-
-  @override
-  List<Object?> get props => [conversation];
+class MessagingInitial extends MessagingState {
+  const MessagingInitial() : super();
 }

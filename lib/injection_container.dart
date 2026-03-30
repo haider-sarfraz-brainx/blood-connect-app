@@ -52,7 +52,7 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<MessagingBloc>(
     () => MessagingBloc(
       messagingRepository: sl<MessagingRepository>(),
-      currentUserId: sl<SessionManager>().getUser()?.id ?? '',
+      sessionManager: sl<SessionManager>(),
     ),
   );
 

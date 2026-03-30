@@ -7,6 +7,11 @@ import '../../../config/theme/base.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/view_constants.dart';
 import '../../../injection_container.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../bloc/messaging_bloc/messaging_bloc.dart';
+import '../../../bloc/messaging_bloc/messaging_events.dart';
+import '../../../bloc/messaging_bloc/messaging_states.dart';
+import '../messaging/chat_screen.dart';
 import '../donors/donors_screen.dart';
 import '../home/home_screen.dart';
 import '../messaging/conversation_list_screen.dart';
@@ -50,40 +55,59 @@ class _BottomNavbarScreenState extends State<BottomNavbarScreen> {
     final baseTheme = themeBloc.state.baseTheme;
     final navColors = baseTheme.bottomNavBar;
 
-    return Scaffold(
-      backgroundColor: baseTheme.background,
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
-      bottomNavigationBar: SafeArea(
-        child: _FloatingNavBar(
-          currentIndex: _currentIndex,
-          baseTheme: baseTheme,
-          navColors: navColors,
-          onTap: _onTabTapped,
-          items: const [
-            _NavItemData(
-              icon: Icons.home_rounded,
-              label: ViewConstants.home,
+    return BlocListener<MessagingBloc, MessagingState>(
+      bloc: sl<MessagingBloc>(),
+      listener: (context, MessagingState state) {
+        if (state.createdConversation != null) {
+          final conversation = state.createdConversation!;
+          sl<MessagingBloc>().add(ResetCreatedConversationEvent());
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ChatScreen(conversation: conversation),
             ),
-            _NavItemData(
-              icon: Icons.people_rounded,
-              label: ViewConstants.donors,
-            ),
-            _NavItemData(
-              icon: Icons.chat_bubble_rounded,
-              label: 'Messages',
-            ),
-            _NavItemData(
-              icon: Icons.bloodtype_rounded,
-              label: "Requests",
-            ),
-            _NavItemData(
-              icon: Icons.settings_rounded,
-              label: ViewConstants.setting,
-            ),
-          ],
+          );
+        } else if (state.error != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.error!)),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: baseTheme.background,
+        body: IndexedStack(
+          index: _currentIndex,
+          children: _screens,
+        ),
+        bottomNavigationBar: SafeArea(
+          child: _FloatingNavBar(
+            currentIndex: _currentIndex,
+            baseTheme: baseTheme,
+            navColors: navColors,
+            onTap: _onTabTapped,
+            items: const [
+              _NavItemData(
+                icon: Icons.home_rounded,
+                label: ViewConstants.home,
+              ),
+              _NavItemData(
+                icon: Icons.people_rounded,
+                label: ViewConstants.donors,
+              ),
+              _NavItemData(
+                icon: Icons.chat_bubble_rounded,
+                label: 'Messages',
+              ),
+              _NavItemData(
+                icon: Icons.bloodtype_rounded,
+                label: "Requests",
+              ),
+              _NavItemData(
+                icon: Icons.settings_rounded,
+                label: ViewConstants.setting,
+              ),
+            ],
+          ),
         ),
       ),
     );
