@@ -17,6 +17,8 @@ import '../../../widgets/chip_selection/blood_group_chip_selection.dart';
 import '../../../widgets/custom_text.dart';
 import '../../../widgets/custom_text_field.dart';
 import '../../../widgets/loading_overlay.dart';
+import '../../../data/managers/local/session_manager.dart';
+import '../../../widgets/bottom_sheets/location_selection_bottom_sheet.dart';
 
 class CreateBloodScreen extends StatefulWidget {
   const CreateBloodScreen({super.key});
@@ -37,6 +39,8 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
   final _notesController = TextEditingController();
 
     String? _selectedBloodGroup;
+    String? _selectedCountry;
+    String? _selectedCity;
     bool _isEmergency = false;
 
   late ThemeBloc themeBloc;
@@ -50,7 +54,21 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
     super.initState();
     themeBloc = sl<ThemeBloc>();
     bloodRequestBloc = sl<BloodRequestBloc>();
+    _initializeLocation();
     _addTextControllersListeners();
+  }
+
+  Future<void> _initializeLocation() async {
+    final user = sl<SessionManager>().user;
+    if (user != null) {
+      setState(() {
+        _selectedCountry = user.country;
+        _selectedCity = user.city;
+        if (_selectedCountry != null) {
+          _hospitalAddressController.text = '${_selectedCity ?? ""}${_selectedCity != null ? ", " : ""}${_selectedCountry ?? ""}';
+        }
+      });
+    }
   }
 
   @override
@@ -100,6 +118,23 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
     return true;
   }
 
+  Future<void> _showLocationSelection() async {
+    final result = await LocationSelectionBottomSheet.show(
+      context: context,
+      initialCountry: _selectedCountry,
+      initialCity: _selectedCity,
+    );
+
+    if (result != null) {
+      setState(() {
+        _selectedCountry = result['country'];
+        _selectedCity = result['city'];
+        _hospitalAddressController.text = '${_selectedCity ?? ""}${_selectedCity != null ? ", " : ""}${_selectedCountry ?? ""}';
+      });
+      _updateButtonState();
+    }
+  }
+
   void _onBloodGroupSelected(String bloodGroup) {
     setState(() => _selectedBloodGroup = bloodGroup);
     _updateButtonState();
@@ -124,6 +159,8 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
         hospitalAddress: _hospitalAddressController.text.trim().isEmpty
             ? null
             : _hospitalAddressController.text.trim(),
+        country: _selectedCountry,
+        city: _selectedCity,
         contactNumber: _contactNumberController.text.trim(),
         notes: _notesController.text.trim().isEmpty
             ? null
@@ -309,12 +346,14 @@ class _CreateBloodScreenState extends State<CreateBloodScreen>
                           labelText: ViewConstants.hospitalAddress,
                           hintText: ViewConstants.hospitalAddressHint,
                           controller: _hospitalAddressController,
-                          keyboardType: TextInputType.streetAddress,
+                          readOnly: true,
+                          onTap: _showLocationSelection,
                           maxLines: 2,
                           prefixIcon: Icon(
                             Icons.location_on_rounded,
                             color: baseTheme.primary,
                           ),
+                          translate: false,
                         ),
 
                         const SizedBox(height: AppConstants.gap12Px),

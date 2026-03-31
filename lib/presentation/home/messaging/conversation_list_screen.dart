@@ -78,14 +78,20 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
           ).toList();
 
           if (_showingRequests) {
-            return _buildRequestList(requests, baseTheme);
+            return RefreshIndicator(
+              onRefresh: () async => sl<MessagingBloc>().add(LoadConversationsEvent()),
+              child: _buildRequestList(requests, baseTheme),
+            );
           }
 
           if (state.error != null && allConversations.isEmpty) {
              return Center(child: Text(state.error!));
           }
 
-          return _buildMainList(chats, requests.length, baseTheme);
+          return RefreshIndicator(
+            onRefresh: () async => sl<MessagingBloc>().add(LoadConversationsEvent()),
+            child: _buildMainList(chats, requests.length, baseTheme),
+          );
         },
       ),
     );
@@ -95,7 +101,12 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
     final hasConversations = conversations.isNotEmpty || requestCount > 0;
     
     if (!hasConversations) {
-      return _buildEmptyState(baseTheme, ViewConstants.noActiveChats);
+      return Stack(
+        children: [
+          ListView(), // To make refresh indicator work even when empty
+          _buildEmptyState(baseTheme, ViewConstants.noActiveChats),
+        ],
+      );
     }
 
     return ListView.builder(
@@ -129,7 +140,12 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
 
   Widget _buildRequestList(List<ConversationModel> requests, BaseTheme baseTheme) {
     if (requests.isEmpty) {
-      return _buildEmptyState(baseTheme, ViewConstants.noMessageRequests);
+      return Stack(
+        children: [
+          ListView(), // To make refresh indicator work even when empty
+          _buildEmptyState(baseTheme, ViewConstants.noMessageRequests),
+        ],
+      );
     }
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -340,15 +356,23 @@ class _ConversationCard extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          fontFamily: AppConstants.fontFamilyLato,
-                          fontSize: AppConstants.font13Px,
-                          color: baseTheme.textColor.fixedOpacity(0.6),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              subtitle,
+                              style: TextStyle(
+                                fontFamily: AppConstants.fontFamilyLato,
+                                fontSize: AppConstants.font13Px,
+                                color: baseTheme.textColor.fixedOpacity(0.6),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (conversation.status != ConversationStatus.accepted)
+                            _buildStatusBadge(conversation.status, baseTheme),
+                        ],
                       ),
                     ],
                   ),
@@ -356,6 +380,47 @@ class _ConversationCard extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge(ConversationStatus status, BaseTheme baseTheme) {
+    Color color;
+    String label;
+
+    switch (status) {
+      case ConversationStatus.pending:
+        color = Colors.orange;
+        label = 'Request';
+        break;
+      case ConversationStatus.blocked:
+        color = Colors.red;
+        label = 'Blocked';
+        break;
+      case ConversationStatus.reported:
+        color = Colors.red.shade900;
+        label = 'Reported';
+        break;
+      default:
+        return const SizedBox.shrink();
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(left: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withOpacity(0.2), width: 0.5),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontFamily: AppConstants.fontFamilyLato,
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          color: color,
         ),
       ),
     );

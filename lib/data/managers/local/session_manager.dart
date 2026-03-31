@@ -13,6 +13,8 @@ class SessionManager {
     await _storage.setBool(key: _isLoggedInKey, value: true);
   }
 
+  UserModel? get user => getUser();
+
   UserModel? getUser() {
     final userJson = _storage.getString(key: _userKey);
     if (userJson != null) {

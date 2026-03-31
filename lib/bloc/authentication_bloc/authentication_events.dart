@@ -52,14 +52,20 @@ class CheckAuthenticationStatusEvent extends AuthenticationEvent {
 class UpdateProfileEvent extends AuthenticationEvent {
   final String name;
   final String? phone;
+  final String? country;
+  final String? city;
+  final String? timezone;
 
   const UpdateProfileEvent({
     required this.name,
     this.phone,
+    this.country,
+    this.city,
+    this.timezone,
   });
 
   @override
-  List<Object?> get props => [name, phone];
+  List<Object?> get props => [name, phone, country, city, timezone];
 }
 
 class ChangePasswordEvent extends AuthenticationEvent {
@@ -79,7 +85,9 @@ class CompleteOnboardingEvent extends AuthenticationEvent {
   final String? bloodGroup;
   final double? latitude;
   final double? longitude;
-  final String? address;
+  final String? country;
+  final String? city;
+  final String? timezone;
   final DateTime? dateOfBirth;
   final String? gender;
   final String? emergencyContactName;
@@ -90,7 +98,9 @@ class CompleteOnboardingEvent extends AuthenticationEvent {
     this.bloodGroup,
     this.latitude,
     this.longitude,
-    this.address,
+    this.country,
+    this.city,
+    this.timezone,
     this.dateOfBirth,
     this.gender,
     this.emergencyContactName,
@@ -103,7 +113,9 @@ class CompleteOnboardingEvent extends AuthenticationEvent {
         bloodGroup,
         latitude,
         longitude,
-        address,
+        country,
+        city,
+        timezone,
         dateOfBirth,
         gender,
         emergencyContactName,

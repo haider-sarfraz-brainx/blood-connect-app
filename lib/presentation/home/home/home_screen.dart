@@ -25,6 +25,7 @@ import '../../../widgets/custom_text.dart';
 import '../../../widgets/custom_text_field.dart';
 import '../../../widgets/skeleton/request_card_skeleton.dart';
 import '../donors/widgets/greeting_dialog.dart';
+import '../../../widgets/bottom_sheets/location_selection_bottom_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -43,6 +44,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String? _userBloodGroup;
   String? _selectedBloodGroup;
+  String? _selectedCountry;
+  String? _selectedCity;
   String? _currentUserId;
   List<BloodRequestModel> _allRequests = [];
   List<BloodRequestModel> _filteredRequests = [];
@@ -64,6 +67,8 @@ class _HomeScreenState extends State<HomeScreen> {
     if (user != null) {
       _userBloodGroup = user.bloodGroup;
       _selectedBloodGroup = user.bloodGroup;
+      _selectedCountry = user.country;
+      _selectedCity = user.city;
       _currentUserId = user.id;
     }
     final supabaseUserId = supabaseService.client.auth.currentUser?.id;
@@ -80,7 +85,24 @@ class _HomeScreenState extends State<HomeScreen> {
     bloodRequestBloc.add(GetBloodRequestsForHomeEvent(
       bloodGroup: _selectedBloodGroup,
       excludeUserId: userIdToExclude,
+      country: _selectedCountry,
+      city: _selectedCity,
     ));
+  }
+
+  Future<void> _showLocationFilter() async {
+    final result = await LocationSelectionBottomSheet.show(
+      context: context,
+      initialCountry: _selectedCountry,
+      initialCity: _selectedCity,
+    );
+    if (result != null) {
+      setState(() {
+        _selectedCountry = result['country'];
+        _selectedCity = result['city'];
+      });
+      _loadRequests();
+    }
   }
 
   Future<void> _showBloodGroupFilter() async {
@@ -272,32 +294,46 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                      child: Row(
-                        children: [
-                          _FilterChip(
-                            label: (_selectedBloodGroup != null &&
-                                    _selectedBloodGroup!.isNotEmpty)
-                                ? _selectedBloodGroup!
-                                : ViewConstants.filterByBloodGroup.tr(),
-                            isActive: _selectedBloodGroup != null &&
-                                _selectedBloodGroup!.isNotEmpty,
-                            onTap: _showBloodGroupFilter,
-                            baseTheme: baseTheme,
-                          ),
-                          const Spacer(),
-                          if (!isInitialLoad && _allRequests.isNotEmpty)
-                            Text(
-                              '${_filteredRequests.length} '
-                              '${ViewConstants.noRequestsFound.tr()}',
-                              style: TextStyle(
-                                fontFamily: AppConstants.fontFamilyLato,
-                                fontSize: AppConstants.font12Px,
-                                fontWeight: FontWeight.w500,
-                                color:
-                                    baseTheme.textColor.fixedOpacity(0.4),
-                              ),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            _FilterChip(
+                              label: (_selectedBloodGroup != null &&
+                                      _selectedBloodGroup!.isNotEmpty)
+                                  ? _selectedBloodGroup!
+                                  : ViewConstants.filterByBloodGroup.tr(),
+                              isActive: _selectedBloodGroup != null &&
+                                  _selectedBloodGroup!.isNotEmpty,
+                              onTap: _showBloodGroupFilter,
+                              baseTheme: baseTheme,
+                              icon: Icons.water_drop_rounded,
                             ),
-                        ],
+                            const SizedBox(width: 8),
+                            _FilterChip(
+                              label: _selectedCountry ?? 'Select Country',
+                              isActive: _selectedCountry != null,
+                              onTap: _showLocationFilter,
+                              baseTheme: baseTheme,
+                              icon: Icons.location_on_rounded,
+                            ),
+                            if (_selectedCountry != null || _selectedBloodGroup != null)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8),
+                                child: TextButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _selectedBloodGroup = null;
+                                      _selectedCountry = null;
+                                      _selectedCity = null;
+                                    });
+                                    _loadRequests();
+                                  },
+                                  child: const Text('Clear'),
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                     ),
 
@@ -415,12 +451,14 @@ class _FilterChip extends StatelessWidget {
   final bool isActive;
   final VoidCallback onTap;
   final BaseTheme baseTheme;
+  final IconData icon;
 
   const _FilterChip({
     required this.label,
     required this.isActive,
     required this.onTap,
     required this.baseTheme,
+    required this.icon,
   });
 
   @override
@@ -451,7 +489,7 @@ class _FilterChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.water_drop_rounded,
+              icon,
               size: 13,
               color: isActive
                   ? activeColor

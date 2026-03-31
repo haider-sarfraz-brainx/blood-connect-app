@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -259,6 +260,8 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void initializeComponent() {
+    rootBundle.loadString(AppAsset.worldPlacesData);
+    
     Future.delayed(const Duration(seconds: 2), () {
       final currentState = authenticationBloc.state;
       if (currentState is AuthenticationAuthenticated) {

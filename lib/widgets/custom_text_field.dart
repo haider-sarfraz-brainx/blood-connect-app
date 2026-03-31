@@ -25,6 +25,8 @@ class CustomTextField extends StatelessWidget {
   final double? borderRadius;
   final bool translate;
   final List<TextInputFormatter>? inputFormatters;
+  final bool readOnly;
+  final VoidCallback? onTap;
 
   const CustomTextField({
     super.key,
@@ -45,6 +47,8 @@ class CustomTextField extends StatelessWidget {
     this.borderRadius,
     this.translate = true,
     this.inputFormatters,
+    this.readOnly = false,
+    this.onTap,
   });
 
   @override
@@ -75,6 +79,8 @@ class CustomTextField extends StatelessWidget {
           enabled: enabled,
           onChanged: onChanged,
           focusNode: focusNode,
+          onTap: onTap,
+          readOnly: readOnly,
           onTapOutside: (focus)=> FocusScope.of(context).unfocus(),
           style: TextStyle(
             color: baseTheme.textColor,

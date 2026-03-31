@@ -12,7 +12,9 @@ class UserModel extends Equatable {
   final String? bloodGroup;
   final double? latitude;
   final double? longitude;
-  final String? address;
+  final String? country;
+  final String? city;
+  final String? timezone;
   final DateTime? dateOfBirth;
   final String? gender;
   final String? emergencyContactName;
@@ -30,7 +32,9 @@ class UserModel extends Equatable {
     this.bloodGroup,
     this.latitude,
     this.longitude,
-    this.address,
+    this.country,
+    this.city,
+    this.timezone,
     this.dateOfBirth,
     this.gender,
     this.emergencyContactName,
@@ -50,7 +54,9 @@ class UserModel extends Equatable {
       'blood_group': bloodGroup,
       'latitude': latitude,
       'longitude': longitude,
-      'address': address,
+      'country': country,
+      'city': city,
+      'timezone': timezone,
       'date_of_birth': dateOfBirth?.toIso8601String(),
       'gender': gender,
       'emergency_contact_name': emergencyContactName,
@@ -73,7 +79,9 @@ class UserModel extends Equatable {
       bloodGroup: map['blood_group'] as String?,
       latitude: map['latitude'] != null ? (map['latitude'] as num).toDouble() : null,
       longitude: map['longitude'] != null ? (map['longitude'] as num).toDouble() : null,
-      address: map['address'] as String?,
+      country: map['country'] as String?,
+      city: map['city'] as String?,
+      timezone: map['timezone'] as String?,
       dateOfBirth: map['date_of_birth'] != null
           ? DateTime.parse(map['date_of_birth'] as String)
           : null,
@@ -103,7 +111,9 @@ class UserModel extends Equatable {
     String? bloodGroup,
     double? latitude,
     double? longitude,
-    String? address,
+    String? country,
+    String? city,
+    String? timezone,
     DateTime? dateOfBirth,
     String? gender,
     String? emergencyContactName,
@@ -121,7 +131,9 @@ class UserModel extends Equatable {
       bloodGroup: bloodGroup ?? this.bloodGroup,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
-      address: address ?? this.address,
+      country: country ?? this.country,
+      city: city ?? this.city,
+      timezone: timezone ?? this.timezone,
       dateOfBirth: dateOfBirth ?? this.dateOfBirth,
       gender: gender ?? this.gender,
       emergencyContactName: emergencyContactName ?? this.emergencyContactName,
@@ -129,6 +141,13 @@ class UserModel extends Equatable {
       lastDonationDate: lastDonationDate ?? this.lastDonationDate,
       onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
     );
+  }
+
+  String? get address {
+    if (city == null && country == null) return null;
+    if (city == null) return country;
+    if (country == null) return city;
+    return '$city, $country';
   }
 
   int? get age {
@@ -169,7 +188,9 @@ class UserModel extends Equatable {
         bloodGroup,
         latitude,
         longitude,
-        address,
+        country,
+        city,
+        timezone,
         dateOfBirth,
         gender,
         emergencyContactName,

@@ -14,6 +14,8 @@ class CreateBloodRequestEvent extends BloodRequestEvent {
   final int unitsRequired;
   final String hospitalName;
   final String? hospitalAddress;
+  final String? country;
+  final String? city;
   final String contactNumber;
   final String? notes;
   final bool isEmergency;
@@ -24,6 +26,8 @@ class CreateBloodRequestEvent extends BloodRequestEvent {
     required this.unitsRequired,
     required this.hospitalName,
     this.hospitalAddress,
+    this.country,
+    this.city,
     required this.contactNumber,
     this.notes,
     this.isEmergency = false,
@@ -36,6 +40,8 @@ class CreateBloodRequestEvent extends BloodRequestEvent {
         unitsRequired,
         hospitalName,
         hospitalAddress,
+        country,
+        city,
         contactNumber,
         notes,
         isEmergency,
@@ -98,12 +104,16 @@ class AcceptBloodRequestEvent extends BloodRequestEvent {
 class GetBloodRequestsForHomeEvent extends BloodRequestEvent {
   final String? bloodGroup;
   final String? excludeUserId;
+  final String? country;
+  final String? city;
 
   const GetBloodRequestsForHomeEvent({
     this.bloodGroup,
     this.excludeUserId,
+    this.country,
+    this.city,
   });
 
   @override
-  List<Object?> get props => [bloodGroup, excludeUserId];
+  List<Object?> get props => [bloodGroup, excludeUserId, country, city];
 }

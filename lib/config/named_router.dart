@@ -5,6 +5,7 @@ import 'package:quick_blood/presentation/authentication/signup/sign_up_screen.da
 import '../presentation/authentication/spalsh/splash_screen.dart';
 import '../presentation/authentication/welcome/welcome_screen.dart';
 import '../presentation/home/navbar/bottom_navbar_screen.dart';
+import '../presentation/home/setting/blocked_users_screen.dart';
 import '../presentation/home/setting/change_password_screen.dart';
 import '../presentation/home/setting/edit_profile_screen.dart';
 import '../presentation/home/setting/edit_onboarding_screen.dart';
@@ -23,6 +24,7 @@ class RouteNames {
   static const String changePassword = '/changePassword';
   static const String forgotPassword = '/forgotPassword';
   static const String updatePassword = '/updatePassword';
+  static const String blockedUsers = '/blockedUsers';
 
 }
 class RouteGenerator {
@@ -66,6 +68,8 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const ForgotPasswordScreen());
       case RouteNames.updatePassword:
         return MaterialPageRoute(builder: (_) => const UpdatePasswordScreen());
+      case RouteNames.blockedUsers:
+        return MaterialPageRoute(builder: (_) => const BlockedUsersScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

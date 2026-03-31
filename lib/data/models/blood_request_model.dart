@@ -49,6 +49,8 @@ class BloodRequestModel extends Equatable {
   final int unitsRequired;
   final String hospitalName;
   final String? hospitalAddress;
+  final String? country;
+  final String? city;
   final String contactNumber;
   final BloodRequestStatus status;
   final String? notes;
@@ -65,6 +67,8 @@ class BloodRequestModel extends Equatable {
     required this.unitsRequired,
     required this.hospitalName,
     this.hospitalAddress,
+    this.country,
+    this.city,
     required this.contactNumber,
     required this.status,
     this.notes,
@@ -83,6 +87,8 @@ class BloodRequestModel extends Equatable {
       'units_required': unitsRequired,
       'hospital_name': hospitalName,
       'hospital_address': hospitalAddress,
+      'country': country,
+      'city': city,
       'contact_number': contactNumber,
       'status': status.toDbString(),
       'notes': notes,
@@ -102,6 +108,8 @@ class BloodRequestModel extends Equatable {
       unitsRequired: map['units_required'] as int,
       hospitalName: map['hospital_name'] as String,
       hospitalAddress: map['hospital_address'] as String?,
+      country: map['country'] as String?,
+      city: map['city'] as String?,
       contactNumber: map['contact_number'] as String,
       status: BloodRequestStatus.fromString(map['status'] as String),
       notes: map['notes'] as String?,
@@ -126,6 +134,8 @@ class BloodRequestModel extends Equatable {
     int? unitsRequired,
     String? hospitalName,
     String? hospitalAddress,
+    String? country,
+    String? city,
     String? contactNumber,
     BloodRequestStatus? status,
     String? notes,
@@ -142,6 +152,8 @@ class BloodRequestModel extends Equatable {
       unitsRequired: unitsRequired ?? this.unitsRequired,
       hospitalName: hospitalName ?? this.hospitalName,
       hospitalAddress: hospitalAddress ?? this.hospitalAddress,
+      country: country ?? this.country,
+      city: city ?? this.city,
       contactNumber: contactNumber ?? this.contactNumber,
       status: status ?? this.status,
       notes: notes ?? this.notes,
@@ -161,6 +173,8 @@ class BloodRequestModel extends Equatable {
         unitsRequired,
         hospitalName,
         hospitalAddress,
+        country,
+        city,
         contactNumber,
         status,
         notes,

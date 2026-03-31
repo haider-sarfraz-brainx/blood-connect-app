@@ -206,5 +206,8 @@ class ViewConstants {
   static const String submitReport = 'submitReport';
   static const String reportSuccess = 'reportSuccess';
   static const String noMessages = 'noMessages';
-
+  static const String typeYourMessage = 'typeYourMessage';
+  static const String blockedUsers = 'blockedUsers';
+  static const String location = 'location';
+  static const String selectCountryAndCity = 'selectCountryAndCity';
 }

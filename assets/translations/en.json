@@ -181,5 +181,7 @@
   "other": "Other",
   "reasonPlaceholder": "Please describe the issue...",
   "submitReport": "Submit Report",
-  "reportSuccess": "Thank you. Your report has been submitted."
+  "reportSuccess": "Thank you. Your report has been submitted.",
+  "typeYourMessage": "Type your message...",
+  "blockedUsers": "Blocked Users"
 }

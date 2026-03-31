@@ -48,37 +48,74 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final baseTheme = sl<ThemeBloc>().state.baseTheme;
-
-    return BlocBuilder<MessagingBloc, MessagingState>(
+    return BlocConsumer<MessagingBloc, MessagingState>(
       bloc: sl<MessagingBloc>(),
-      builder: (context, state) {
-        // Find the most recent version of this conversation in the state if available
-        ConversationModel currentConv = widget.conversation;
-        try {
-          currentConv = state.conversations.firstWhere((c) => c.id == widget.conversation.id);
-        } catch (_) {
-          // If it's not found (might be deleted/not loaded yet), just use the last known
+      listener: (context, state) {
+        if (state.messages.isNotEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
         }
+      },
+      builder: (context, state) {
+        final conv = state.conversations.firstWhere(
+          (c) => c.id == widget.conversation.id,
+          orElse: () => widget.conversation,
+        );
+
+        final baseTheme = sl<ThemeBloc>().state.baseTheme;
 
         return Scaffold(
           backgroundColor: baseTheme.background,
-          appBar: _buildAppBar(currentConv, baseTheme),
+          appBar: _buildAppBar(conv, baseTheme),
           body: Column(
             children: [
               Expanded(
-                child: _buildMessageList(currentConv, baseTheme, state),
+                child: _buildMessageList(conv, baseTheme, state),
               ),
-              _ChatInputArea(
-                controller: _messageController,
-                onSend: () => _sendMessage(currentConv),
-                baseTheme: baseTheme,
-                isLocked: currentConv.status != ConversationStatus.accepted && currentConv.recipientId == _currentUserId,
-              ),
+              if (conv.status == ConversationStatus.blocked)
+                _buildBlockedBanner(conv, baseTheme)
+              else
+                _ChatInputArea(
+                  controller: _messageController,
+                  onSend: () => _sendMessage(conv),
+                  baseTheme: baseTheme,
+                  isLocked: conv.status != ConversationStatus.accepted && conv.recipientId == _currentUserId,
+                ),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildBlockedBanner(ConversationModel conv, BaseTheme baseTheme) {
+    return Container(
+      width: double.infinity,
+      color: baseTheme.primary.withOpacity(0.05),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+      margin: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'You blocked this contact. You can\'t message or call each other in this chat.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: AppConstants.fontFamilyLato,
+              fontSize: 13,
+              color: baseTheme.textColor.withOpacity(0.6),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextButton(
+            onPressed: () => _handleMenuAction('unblock', conv),
+            style: TextButton.styleFrom(
+              foregroundColor: baseTheme.primary,
+              textStyle: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            child: const Text('Unblock'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -165,50 +202,61 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       actions: [
         PopupMenuButton<String>(
-            icon: Icon(Icons.more_vert_rounded, color: baseTheme.textColor.fixedOpacity(0.4)),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            onSelected: (value) => _handleMenuAction(value, conv),
-            color: Colors.white,
-            itemBuilder: (context) => [
+          icon: Icon(Icons.more_vert_rounded, color: baseTheme.textColor.fixedOpacity(0.4)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          onSelected: (value) => _handleMenuAction(value, conv),
+          color: Colors.white,
+          itemBuilder: (context) => [
+            PopupMenuItem(
+              value: 'report',
+              child: Row(
+                children: [
+                  const Icon(Icons.report_problem_outlined, size: 20, color: Colors.orange),
+                  const SizedBox(width: 12),
+                  Text(ViewConstants.reportUser.tr(), style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w600)),
+                ],
+              ),
+            ),
+            const PopupMenuDivider(),
+            if (conv.status == ConversationStatus.blocked)
               PopupMenuItem(
-                value: 'report',
+                value: 'unblock',
                 child: Row(
                   children: [
-                    const Icon(Icons.report_problem_outlined, size: 20, color: Colors.orange),
+                    Icon(Icons.check_circle_outline_rounded, size: 20, color: baseTheme.primary),
                     const SizedBox(width: 12),
-                    Text(ViewConstants.reportUser.tr(), style: const TextStyle(color: Colors.orange)),
+                    Text('Unblock', style: TextStyle(color: baseTheme.primary, fontWeight: FontWeight.w600)),
                   ],
                 ),
-              ),
-              const PopupMenuDivider(),
+              )
+            else
               PopupMenuItem(
                 value: 'block',
                 child: Row(
                   children: [
                     const Icon(Icons.block_flipped, size: 20, color: Colors.red),
                     const SizedBox(width: 12),
-                    Text(ViewConstants.blockUser.tr(), style: const TextStyle(color: Colors.red)),
+                    Text(ViewConstants.blockUser.tr(), style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w600)),
                   ],
                 ),
               ),
-              const PopupMenuDivider(),
-              PopupMenuItem(
-                value: 'delete',
-                child: Row(
-                  children: [
-                    const Icon(Icons.delete_outline_rounded, size: 20, color: Colors.red),
-                    const SizedBox(width: 12),
-                    Text(ViewConstants.deleteChat.tr(), style: const TextStyle(color: Colors.red)),
-                  ],
-                ),
+            const PopupMenuDivider(),
+            PopupMenuItem(
+              value: 'delete',
+              child: Row(
+                children: [
+                  const Icon(Icons.delete_outline_rounded, size: 20, color: Colors.red),
+                  const SizedBox(width: 12),
+                  Text(ViewConstants.deleteChat.tr(), style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w600)),
+                ],
               ),
-            ],
+            ),
+          ],
         ),
         const SizedBox(width: 8),
       ],
     );
   }
-
 
   void _handleMenuAction(String value, ConversationModel conv) {
     switch (value) {
@@ -219,16 +267,30 @@ class _ChatScreenState extends State<ChatScreen> {
         _showConfirmationDialog(
           title: ViewConstants.blockUser,
           content: 'Are you sure you want to block this user?',
+          confirmText: 'Block',
+          confirmColor: Colors.red,
           onConfirm: () {
             sl<MessagingBloc>().add(BlockConversationEvent(conv.id));
-            Navigator.pop(context);
+          },
+        );
+        break;
+      case 'unblock':
+        _showConfirmationDialog(
+          title: 'Unblock User',
+          content: 'Are you sure you want to unblock this user?',
+          confirmText: 'Unblock',
+          confirmColor: sl<ThemeBloc>().state.baseTheme.primary,
+          onConfirm: () {
+            sl<MessagingBloc>().add(UnblockConversationEvent(conv.id));
           },
         );
         break;
       case 'delete':
         _showConfirmationDialog(
           title: ViewConstants.deleteChat,
-          content: 'Are you sure you want to delete this chat? This action cannot be undone.',
+          content: 'Are you sure you want to delete this chat? This action cannot be undone and will permanently remove all data from our servers.',
+          confirmText: 'Delete Forever',
+          confirmColor: Colors.red,
           onConfirm: () {
             sl<MessagingBloc>().add(DeleteConversationEvent(conv.id));
             Navigator.pop(context);
@@ -242,27 +304,88 @@ class _ChatScreenState extends State<ChatScreen> {
     required String title,
     required String content,
     required VoidCallback onConfirm,
+    String confirmText = 'Confirm',
+    Color? confirmColor,
   }) {
     showDialog(
       context: context,
       builder: (context) {
         final baseTheme = sl<ThemeBloc>().state.baseTheme;
-        return AlertDialog(
-          title: Text(title.tr()),
-          content: Text(content.tr()),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(ViewConstants.cancel.tr()),
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: baseTheme.background,
+              borderRadius: BorderRadius.circular(AppConstants.radius20Px),
             ),
-            TextButton(
-              onPressed: () {
-                onConfirm();
-                Navigator.pop(context);
-              },
-              child: Text(ViewConstants.done.tr(), style: const TextStyle(color: Colors.red)),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title.tr(),
+                  style: TextStyle(
+                    fontFamily: AppConstants.fontFamilyLato,
+                    fontSize: AppConstants.font18Px,
+                    fontWeight: FontWeight.w800,
+                    color: baseTheme.textColor,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  content.tr(),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: AppConstants.fontFamilyLato,
+                    fontSize: AppConstants.font14Px,
+                    color: baseTheme.textColor.fixedOpacity(0.6),
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(
+                          ViewConstants.cancel.tr(),
+                          style: TextStyle(
+                            color: baseTheme.textColor.fixedOpacity(0.4),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          onConfirm();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: confirmColor ?? baseTheme.primary,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        child: Text(
+                          confirmText,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
+          ),
         );
       },
     );
@@ -278,7 +401,6 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     final messages = state.messages;
-    _scrollToBottom();
     
     return Column(
       children: [
@@ -315,7 +437,6 @@ class _ChatScreenState extends State<ChatScreen> {
                               content: 'Are you sure you want to decline this request?',
                               onConfirm: () {
                                 sl<MessagingBloc>().add(DeclineConversationEvent(conv.id));
-                                Navigator.pop(context);
                               },
                             );
                           },
@@ -625,9 +746,9 @@ class _ChatScreenState extends State<ChatScreen> {
       case ConversationStatus.accepted:
         return ViewConstants.activeConnection.tr();
       case ConversationStatus.blocked:
-        return ViewConstants.block.tr();
-      default:
-        return ViewConstants.activeConnection.tr();
+        return 'Blocked';
+      case ConversationStatus.reported:
+        return 'Reported';
     }
   }
 }
@@ -725,7 +846,11 @@ class _MessageBubble extends StatelessWidget {
   String _formatHeaderText(DateTime dt) {
     final now = DateTime.now();
     if (dt.year == now.year && dt.month == now.month && dt.day == now.day) {
-      return 'Today'.toUpperCase();
+      return 'TODAY';
+    }
+    final yesterday = now.subtract(const Duration(days: 1));
+    if (dt.year == yesterday.year && dt.month == yesterday.month && dt.day == yesterday.day) {
+      return 'YESTERDAY';
     }
     return DateFormat('MMM dd, yyyy').format(dt).toUpperCase();
   }
@@ -741,20 +866,20 @@ class _ChatInputArea extends StatelessWidget {
     required this.controller,
     required this.onSend,
     required this.baseTheme,
-    required this.isLocked,
+    this.isLocked = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+      padding: EdgeInsets.fromLTRB(20, 12, 20, MediaQuery.of(context).padding.bottom + 12),
       decoration: BoxDecoration(
         color: baseTheme.background,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 20,
-            offset: const Offset(0, -8),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
           ),
         ],
       ),
@@ -762,60 +887,44 @@ class _ChatInputArea extends StatelessWidget {
         children: [
           Expanded(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 18),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
-                color: baseTheme.white,
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(color: baseTheme.disable.withOpacity(0.08)),
+                color: baseTheme.textColor.fixedOpacity(0.05),
+                borderRadius: BorderRadius.circular(24),
               ),
               child: TextField(
                 controller: controller,
-                maxLines: 4,
-                minLines: 1,
-                textCapitalization: TextCapitalization.sentences,
+                enabled: !isLocked,
                 style: TextStyle(
                   fontFamily: AppConstants.fontFamilyLato,
                   fontSize: AppConstants.font14Px,
                   color: baseTheme.textColor,
                 ),
                 decoration: InputDecoration(
-                  hintText: isLocked ? ViewConstants.chatLocked.tr() : ViewConstants.message.tr(),
+                  hintText: isLocked ? 'Wait for acceptance...' : ViewConstants.typeYourMessage.tr(),
                   hintStyle: TextStyle(
                     color: baseTheme.textColor.fixedOpacity(0.3),
-                    fontSize: AppConstants.font14Px,
                   ),
                   border: InputBorder.none,
-                  enabled: !isLocked,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 ),
+                onSubmitted: (_) => onSend(),
               ),
             ),
           ),
           const SizedBox(width: 12),
           GestureDetector(
-            onTap: onSend,
+            onTap: isLocked ? null : onSend,
             child: Container(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: isLocked 
-                      ? [baseTheme.disable, baseTheme.disable] 
-                      : [baseTheme.primary, baseTheme.primary.withRed(baseTheme.primary.red + 30)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                color: isLocked ? baseTheme.textColor.fixedOpacity(0.1) : baseTheme.primary,
                 shape: BoxShape.circle,
-                boxShadow: isLocked ? null : [
-                  BoxShadow(
-                    color: baseTheme.primary.withOpacity(0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
               ),
-              child: Icon(
-                isLocked ? Icons.lock_rounded : Icons.send_rounded, 
-                color: Colors.white, 
-                size: 20
+              child: const Icon(
+                Icons.send_rounded,
+                color: Colors.white,
+                size: 20,
               ),
             ),
           ),

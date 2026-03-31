@@ -6,7 +6,7 @@ import 'bloc/language_bloc/language_bloc.dart';
 import 'bloc/messaging_bloc/messaging_bloc.dart';
 import 'bloc/theme_bloc/theme_bloc.dart';
 import 'config/config.dart';
-import 'core/services/location_service.dart';
+import 'data/managers/local/world_places_manager.dart';
 import 'data/managers/local/local_storage.dart';
 import 'data/managers/local/session_manager.dart';
 import 'data/managers/local/shared_preference.dart';
@@ -56,5 +56,6 @@ Future<void> initializeDependencies() async {
     ),
   );
 
-  sl.registerSingleton<LocationService>(LocationService());
+
+  sl.registerSingleton<WorldPlacesManager>(WorldPlacesManager());
 }

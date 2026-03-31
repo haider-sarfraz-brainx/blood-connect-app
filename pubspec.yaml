@@ -45,12 +45,10 @@ dependencies:
   get_it: ^9.2.1
   supabase_flutter: ^2.5.6
   flutter_dotenv: ^5.1.0
-  geolocator: ^13.0.1
-  geocoding: ^3.0.0
-  permission_handler: ^11.3.1
   intl: ^0.20.2
   url_launcher: ^6.3.1
   webview_flutter: ^4.10.0
+  flutter_timezone: ^5.0.2
 
 dev_dependencies:
   flutter_test:
@@ -80,6 +78,7 @@ flutter:
     - assets/icons/
     - assets/images/
     - assets/translations/
+    - assets/jsons/
     - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see

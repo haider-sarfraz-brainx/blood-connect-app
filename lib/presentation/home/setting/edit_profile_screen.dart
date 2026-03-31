@@ -17,6 +17,7 @@ import '../../../widgets/custom_button.dart';
 import '../../../widgets/custom_text.dart';
 import '../../../widgets/custom_text_field.dart';
 import '../../../widgets/loading_overlay.dart';
+import '../../../widgets/bottom_sheets/location_selection_bottom_sheet.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -29,6 +30,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> with ValidationMi
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _locationController = TextEditingController();
+  
+  String? _selectedCountry;
+  String? _selectedCity;
   
   late ThemeBloc themeBloc;
   late AuthenticationBloc authenticationBloc;
@@ -52,13 +57,35 @@ class _EditProfileScreenState extends State<EditProfileScreen> with ValidationMi
     if (user != null) {
       _nameController.text = user.name;
       _emailController.text = user.email;
-      _phoneController.text = user.phone!;
+      _phoneController.text = user.phone ?? "";
+      _selectedCountry = user.country;
+      _selectedCity = user.city;
+      if (_selectedCountry != null) {
+        _locationController.text = '${_selectedCity ?? ""}${_selectedCity != null ? ", " : ""}${_selectedCountry ?? ""}';
+      }
     }
   }
 
+  Future<void> _showLocationSelection() async {
+    final result = await LocationSelectionBottomSheet.show(
+      context: context,
+      initialCountry: _selectedCountry,
+      initialCity: _selectedCity,
+    );
+
+    if (result != null) {
+      setState(() {
+        _selectedCountry = result['country'];
+        _selectedCity = result['city'];
+        _locationController.text = '${_selectedCity ?? ""}${_selectedCity != null ? ", " : ""}${_selectedCountry ?? ""}';
+      });
+      _updateButtonState();
+    }
+  }
   void _addTextControllersListeners() {
     _nameController.addListener(_updateButtonState);
     _phoneController.addListener(_updateButtonState);
+    _locationController.addListener(_updateButtonState);
   }
 
   void _updateButtonState() {
@@ -73,9 +100,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> with ValidationMi
   void dispose() {
     _nameController.removeListener(_updateButtonState);
     _phoneController.removeListener(_updateButtonState);
+    _locationController.removeListener(_updateButtonState);
     _nameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
+    _locationController.dispose();
     super.dispose();
   }
 
@@ -180,6 +209,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> with ValidationMi
                           color: baseTheme.primary,
                         ),
                       ),
+                      CustomTextField(
+                        labelText: ViewConstants.location,
+                        hintText: 'Select your country and city',
+                        controller: _locationController,
+                        readOnly: true,
+                        onTap: _showLocationSelection,
+                        prefixIcon: Icon(
+                          Icons.location_on_outlined,
+                          color: baseTheme.primary,
+                        ),
+                        translate: false,
+                      ),
                       StatefulBuilder(
                         builder: (context, state) {
                           updateButtonStateSetter = state;
@@ -219,9 +260,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> with ValidationMi
 
     final user = sessionManager.getUser();
     if (user != null) {
-      
-      if (name == user.name && phone == user.phone) {
-        return false; 
+      final isChanged = name != user.name || 
+                        phone != user.phone || 
+                        _selectedCountry != user.country || 
+                        _selectedCity != user.city;
+      if (!isChanged) {
+        return false;
       }
     }
 
@@ -233,6 +277,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> with ValidationMi
       UpdateProfileEvent(
         name: _nameController.text.trim(),
         phone: _phoneController.text.trim(),
+        country: _selectedCountry,
+        city: _selectedCity,
       ),
     );
   }

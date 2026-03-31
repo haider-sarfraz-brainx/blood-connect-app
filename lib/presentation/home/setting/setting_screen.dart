@@ -161,6 +161,16 @@ class _SettingScreenState extends State<SettingScreen> {
                                 RouteNames.changePassword,
                               ),
                               ),
+                              _SettingsTile(
+                                icon: Icons.lock_rounded,
+                                title: ViewConstants.blockedUsers,
+                                baseTheme: baseTheme,
+                                settingsColors: settingsColors,
+                                onTap: () => AppRouter.pushNamed(
+                                  context,
+                                  RouteNames.blockedUsers,
+                                ),
+                              ),
                             ],
                           ),
 

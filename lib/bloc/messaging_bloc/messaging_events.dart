@@ -86,6 +86,15 @@ class BlockConversationEvent extends MessagingEvent {
   List<Object?> get props => [conversationId];
 }
 
+class UnblockConversationEvent extends MessagingEvent {
+  final String conversationId;
+
+  const UnblockConversationEvent(this.conversationId);
+
+  @override
+  List<Object?> get props => [conversationId];
+}
+
 class ReportConversationEvent extends MessagingEvent {
   final String conversationId;
   final String reason;

@@ -130,6 +130,8 @@ class SupabaseService {
   Future<List<BloodRequestModel>> getBloodRequestsForHome({
     String? bloodGroup,
     String? excludeUserId,
+    String? country,
+    String? city,
   }) async {
     try {
       
@@ -139,6 +141,14 @@ class SupabaseService {
 
       if (bloodGroup != null && bloodGroup.isNotEmpty) {
         query = query.eq('blood_group', bloodGroup);
+      }
+      
+      if (country != null && country.isNotEmpty) {
+        query = query.eq('country', country);
+      }
+      
+      if (city != null && city.isNotEmpty) {
+        query = query.eq('city', city);
       }
 
       final response = await query
@@ -243,7 +253,11 @@ class SupabaseService {
     }
   }
 
-  Future<List<UserModel>> getAllDonors({String? excludeUserId}) async {
+  Future<List<UserModel>> getAllDonors({
+    String? excludeUserId,
+    String? country,
+    String? city,
+  }) async {
     try {
       final currentUserId = client.auth.currentUser?.id;
       final userIdToExclude = excludeUserId ?? currentUserId;
@@ -255,6 +269,14 @@ class SupabaseService {
           
       if (userIdToExclude != null) {
         query = query.neq('id', userIdToExclude);
+      }
+      
+      if (country != null && country.isNotEmpty) {
+        query = query.eq('country', country);
+      }
+      
+      if (city != null && city.isNotEmpty) {
+        query = query.eq('city', city);
       }
       
       final response = await query;
@@ -473,7 +495,14 @@ class SupabaseService {
   Future<void> blockConversation(String id) async {
     await client
         .from(DbConstants.conversations)
-        .update({'status': ConversationStatus.blocked.toDbString(), 'updated_at': DateTime.now().toIso8601String()})
+        .update({'status': ConversationStatus.blocked.toDbString(), 'updated_at': DateTime.now().toUtc().toIso8601String()})
+        .eq('id', id);
+  }
+
+  Future<void> unblockConversation(String id) async {
+    await client
+        .from(DbConstants.conversations)
+        .update({'status': ConversationStatus.accepted.toDbString(), 'updated_at': DateTime.now().toUtc().toIso8601String()})
         .eq('id', id);
   }
 
@@ -514,6 +543,19 @@ class SupabaseService {
   }
 
   Future<void> deleteConversation(String id) async {
+    // 1. Delete associated reports first (FKey constraint)
+    await client
+        .from(DbConstants.reports)
+        .delete()
+        .eq('conversation_id', id);
+
+    // 2. Delete associated messages
+    await client
+        .from(DbConstants.messages)
+        .delete()
+        .eq('conversation_id', id);
+        
+    // 3. Delete the conversation itself
     await client
         .from(DbConstants.conversations)
         .delete()

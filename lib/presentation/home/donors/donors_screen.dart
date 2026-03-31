@@ -7,9 +7,7 @@ import '../../../bloc/donor_bloc/donor_events.dart';
 import '../../../bloc/donor_bloc/donor_states.dart';
 import '../../../bloc/messaging_bloc/messaging_bloc.dart';
 import '../../../bloc/messaging_bloc/messaging_events.dart';
-import '../../../bloc/messaging_bloc/messaging_states.dart';
 import '../../../injection_container.dart';
-import '../messaging/chat_screen.dart';
 import './widgets/greeting_dialog.dart';
 import '../../../bloc/theme_bloc/theme_bloc.dart';
 import '../../../bloc/theme_bloc/theme_states.dart';
@@ -19,9 +17,10 @@ import '../../../core/constants/view_constants.dart';
 import '../../../core/extensions/color.dart';
 import '../../../data/managers/remote/supabase_service.dart';
 import '../../../data/models/user_model.dart';
-import '../../../injection_container.dart';
 import '../../../widgets/custom_text_field.dart';
 import '../../../widgets/skeleton/donor_card_skeleton.dart';
+import '../../../data/managers/local/session_manager.dart';
+import '../../../widgets/bottom_sheets/location_selection_bottom_sheet.dart';
 
 class DonorsScreen extends StatefulWidget {
   const DonorsScreen({super.key});
@@ -34,6 +33,8 @@ class _DonorsScreenState extends State<DonorsScreen> {
   late final DonorBloc _bloc;
   final TextEditingController _searchController = TextEditingController();
 
+  String? _selectedCountry;
+  String? _selectedCity;
   List<UserModel> _allDonors = [];
   List<UserModel> _filteredDonors = [];
   bool _isLoading = false;
@@ -43,7 +44,23 @@ class _DonorsScreenState extends State<DonorsScreen> {
     super.initState();
     _bloc = DonorBloc(sl<SupabaseService>());
     _searchController.addListener(_onSearchChanged);
-    _bloc.add(const GetDonorsEvent());
+    _initializeFilters();
+  }
+
+  void _initializeFilters() {
+    final user = sl<SessionManager>().user;
+    if (user != null) {
+      _selectedCountry = user.country;
+      _selectedCity = user.city;
+    }
+    _loadDonors();
+  }
+
+  void _loadDonors() {
+    _bloc.add(GetDonorsEvent(
+      country: _selectedCountry,
+      city: _selectedCity,
+    ));
   }
 
   @override
@@ -70,6 +87,21 @@ class _DonorsScreenState extends State<DonorsScreen> {
         }).toList();
       }
     });
+  }
+
+  Future<void> _showLocationFilter() async {
+    final result = await LocationSelectionBottomSheet.show(
+      context: context,
+      initialCountry: _selectedCountry,
+      initialCity: _selectedCity,
+    );
+    if (result != null) {
+      setState(() {
+        _selectedCountry = result['country'];
+        _selectedCity = result['city'];
+      });
+      _loadDonors();
+    }
   }
 
   Future<void> _launchCall(String phone) async {
@@ -156,8 +188,8 @@ class _DonorsScreenState extends State<DonorsScreen> {
                 ),
               ),
               body: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                     child: CustomTextField(
@@ -178,6 +210,37 @@ class _DonorsScreenState extends State<DonorsScreen> {
                           : null,
                     ),
                   ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            _FilterChip(
+                              label: _selectedCountry ?? 'Select Country',
+                              isActive: _selectedCountry != null,
+                              onTap: _showLocationFilter,
+                              baseTheme: baseTheme,
+                              icon: Icons.location_on_rounded,
+                            ),
+                            if (_selectedCountry != null)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8),
+                                child: TextButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _selectedCountry = null;
+                                      _selectedCity = null;
+                                    });
+                                    _loadDonors();
+                                  },
+                                  child: const Text('Clear'),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
 
                   Expanded(
                     child: isInitialLoad
@@ -205,7 +268,7 @@ class _DonorsScreenState extends State<DonorsScreen> {
   Widget _buildList(BaseTheme baseTheme) {
     return RefreshIndicator(
       color: baseTheme.primary,
-      onRefresh: () async => _bloc.add(const GetDonorsEvent()),
+      onRefresh: () async => _loadDonors(),
       child: Stack(
         children: [
           ListView.builder(
@@ -354,16 +417,6 @@ class _DonorCard extends StatelessWidget {
     }
   }
 
-  String? get _subtitle {
-    final parts = <String>[];
-    if (donor.gender != null && donor.gender!.isNotEmpty) {
-      parts.add(donor.gender!);
-    }
-    if (donor.age != null) {
-      parts.add('${donor.age} ${ViewConstants.yearsOld.tr()}');
-    }
-    return parts.isEmpty ? null : parts.join('  ·  ');
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -393,7 +446,7 @@ class _DonorCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                
+
                 Container(
                   width: 52,
                   height: 52,
@@ -483,42 +536,6 @@ class _DonorCard extends StatelessWidget {
 
             const SizedBox(height: AppConstants.gap14Px),
 
-            Divider(
-              height: 1,
-              thickness: 1,
-              color: baseTheme.textColor.fixedOpacity(0.06),
-            ),
-
-            const SizedBox(height: AppConstants.gap12Px),
-
-            Wrap(
-              spacing: AppConstants.gap16Px,
-              runSpacing: AppConstants.gap8Px,
-              children: [
-                _MetaInfo(
-                  icon: Icons.person_outline_rounded,
-                  text: 'Gender hidden',
-                  iconColor: baseTheme.textColor.fixedOpacity(0.45),
-                  baseTheme: baseTheme,
-                ),
-                _MetaInfo(
-                  icon: Icons.event_rounded,
-                  text: 'Age hidden',
-                  iconColor: baseTheme.textColor.fixedOpacity(0.45),
-                  baseTheme: baseTheme,
-                ),
-                _MetaInfo(
-                  icon: Icons.location_on_outlined,
-                  text: 'Address hidden',
-                  iconColor: baseTheme.textColor.fixedOpacity(0.45),
-                  baseTheme: baseTheme,
-                  maxWidth: 140,
-                ),
-              ],
-            ),
-
-            const SizedBox(height: AppConstants.gap16Px),
-
             Row(
               children: [
                 Expanded(
@@ -565,46 +582,6 @@ class _DonorCard extends StatelessWidget {
 }
 
 
-class _MetaInfo extends StatelessWidget {
-  final IconData icon;
-  final String text;
-  final Color iconColor;
-  final BaseTheme baseTheme;
-  final double? maxWidth;
-
-  const _MetaInfo({
-    required this.icon,
-    required this.text,
-    required this.iconColor,
-    required this.baseTheme,
-    this.maxWidth,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 13, color: iconColor),
-        const SizedBox(width: 4),
-        ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: maxWidth ?? 200),
-          child: Text(
-            text,
-            style: TextStyle(
-              fontFamily: AppConstants.fontFamilyLato,
-              fontSize: AppConstants.font12Px,
-              fontWeight: FontWeight.w500,
-              color: baseTheme.textColor.fixedOpacity(0.6),
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
-  }
-}
 
 class _ActionButton extends StatelessWidget {
   final IconData icon;
@@ -647,6 +624,81 @@ class _ActionButton extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+class _FilterChip extends StatelessWidget {
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+  final BaseTheme baseTheme;
+  final IconData icon;
+
+  const _FilterChip({
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+    required this.baseTheme,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final activeColor = baseTheme.primary;
+    final inactiveColor = baseTheme.textColor;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        padding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: isActive
+              ? activeColor.withOpacity(0.08)
+              : inactiveColor.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isActive
+                ? activeColor.withOpacity(0.22)
+                : inactiveColor.withOpacity(0.1),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 13,
+              color: isActive
+                  ? activeColor
+                  : inactiveColor.withOpacity(0.45),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: AppConstants.fontFamilyLato,
+                fontSize: AppConstants.font13Px,
+                fontWeight: FontWeight.w600,
+                color: isActive
+                    ? activeColor
+                    : inactiveColor.withOpacity(0.55),
+              ),
+            ),
+            const SizedBox(width: 3),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 16,
+              color: isActive
+                  ? activeColor
+                  : inactiveColor.withOpacity(0.45),
+            ),
+          ],
         ),
       ),
     );

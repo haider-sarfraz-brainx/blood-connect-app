@@ -51,6 +51,10 @@ class MessagingRepository {
     return _supabaseService.blockConversation(id);
   }
 
+  Future<void> unblockConversation(String id) {
+    return _supabaseService.unblockConversation(id);
+  }
+
   Future<void> reportConversation({
     required String conversationId,
     required String reason,

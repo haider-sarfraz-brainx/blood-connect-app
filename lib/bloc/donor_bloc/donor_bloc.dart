@@ -19,6 +19,8 @@ class DonorBloc extends Bloc<DonorEvent, DonorState> {
       final currentUserId = _supabaseService.client.auth.currentUser?.id;
       final donors = await _supabaseService.getAllDonors(
         excludeUserId: currentUserId,
+        country: event.country,
+        city: event.city,
       );
       emit(DonorsLoaded(donors));
     } catch (e) {

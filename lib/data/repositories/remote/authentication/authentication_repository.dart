@@ -1,11 +1,21 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../managers/remote/supabase_service.dart';
 import '../../../models/user_model.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 
 class AuthenticationRepository {
   final SupabaseService _supabaseService;
 
   AuthenticationRepository(this._supabaseService);
+
+  Future<String?> _getLocalTimezone() async {
+    try {
+      final timezoneInfo = await FlutterTimezone.getLocalTimezone();
+      return timezoneInfo.identifier;
+    } catch (_) {
+      return null;
+    }
+  }
 
   Future<AuthResponse> signUp({
     required String email,
@@ -24,11 +34,13 @@ class AuthenticationRepository {
       );
 
       if (response.user != null) {
+        final tz = await _getLocalTimezone();
         final userModel = UserModel(
           id: response.user!.id,
           name: name,
           email: email,
           phone: phone,
+          timezone: tz,
           createdAt: DateTime.now(),
           onboardingCompleted: false, 
         );
@@ -55,6 +67,8 @@ class AuthenticationRepository {
       if (response.user != null) {
         
         var userModel = await _supabaseService.getUserById(response.user!.id);
+        final tz = await _getLocalTimezone();
+        
         if (userModel == null) {
           
           final userModelFromAuth = UserModel(
@@ -62,10 +76,13 @@ class AuthenticationRepository {
             name: response.user!.userMetadata?['name'] ?? '',
             email: response.user!.email ?? email,
             phone: response.user!.userMetadata?['phone'] ?? '',
+            timezone: tz,
             createdAt: DateTime.parse(response.user!.createdAt),
             onboardingCompleted: false,
           );
           userModel = await _supabaseService.insertUser(userModelFromAuth);
+        } else if (userModel.timezone != tz && tz != null) {
+          userModel = await _supabaseService.updateUser(userModel.copyWith(timezone: tz));
         }
         
       }
@@ -100,6 +117,9 @@ class AuthenticationRepository {
     required String userId,
     required String name,
     String? phone,
+    String? country,
+    String? city,
+    String? timezone,
   }) async {
     try {
       final currentUser = await _supabaseService.getUserById(userId);
@@ -110,6 +130,9 @@ class AuthenticationRepository {
       final updatedUser = currentUser.copyWith(
         name: name,
         phone: phone,
+        country: country,
+        city: city,
+        timezone: timezone ?? currentUser.timezone,
         updatedAt: DateTime.now(),
       );
 
@@ -120,6 +143,8 @@ class AuthenticationRepository {
           data: {
             'name': name,
             if (phone != null) 'phone': phone,
+            if (country != null) 'country': country,
+            if (city != null) 'city': city,
           },
         ),
       );
@@ -183,7 +208,9 @@ class AuthenticationRepository {
     String? bloodGroup,
     double? latitude,
     double? longitude,
-    String? address,
+    String? country,
+    String? city,
+    String? timezone,
     DateTime? dateOfBirth,
     String? gender,
     String? emergencyContactName,
@@ -215,7 +242,9 @@ class AuthenticationRepository {
         bloodGroup: bloodGroup,
         latitude: latitude,
         longitude: longitude,
-        address: address,
+        country: country,
+        city: city,
+        timezone: timezone ?? currentUser.timezone,
         dateOfBirth: dateOfBirth,
         gender: gender,
         emergencyContactName: emergencyContactName,

@@ -31,6 +31,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
     on<StreamMessagesEvent>(_onStreamMessages);
     on<DeclineConversationEvent>(_onDeclineConversation);
     on<BlockConversationEvent>(_onBlockConversation);
+    on<UnblockConversationEvent>(_onUnblockConversation);
     on<ReportConversationEvent>(_onReportConversation);
     on<DeleteConversationEvent>(_onDeleteConversation);
     on<_UpdateConversations>((event, emit) {
@@ -237,6 +238,17 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
     }
   }
 
+  Future<void> _onUnblockConversation(
+    UnblockConversationEvent event,
+    Emitter<MessagingState> emit,
+  ) async {
+    try {
+      await _messagingRepository.unblockConversation(event.conversationId);
+    } catch (e) {
+      emit(state.copyWith(error: e.toString()));
+    }
+  }
+
   Future<void> _onReportConversation(
     ReportConversationEvent event,
     Emitter<MessagingState> emit,
@@ -256,10 +268,20 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
     DeleteConversationEvent event,
     Emitter<MessagingState> emit,
   ) async {
+    final previousConversations = List<ConversationModel>.from(state.conversations);
     try {
+      // Optimistic update
+      final updated = List<ConversationModel>.from(state.conversations)
+          ..removeWhere((c) => c.id == event.conversationId);
+      emit(state.copyWith(conversations: updated));
+      
       await _messagingRepository.deleteConversation(event.conversationId);
     } catch (e) {
-      emit(state.copyWith(error: e.toString()));
+      // Rollback on error
+      emit(state.copyWith(
+        conversations: previousConversations,
+        error: e.toString(),
+      ));
     }
   }
 

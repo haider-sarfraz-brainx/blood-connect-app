@@ -8,5 +8,11 @@ abstract class DonorEvent extends Equatable {
 }
 
 class GetDonorsEvent extends DonorEvent {
-  const GetDonorsEvent();
+  final String? country;
+  final String? city;
+
+  const GetDonorsEvent({this.country, this.city});
+
+  @override
+  List<Object?> get props => [country, city];
 }

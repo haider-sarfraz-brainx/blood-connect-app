@@ -12,8 +12,6 @@ import '../../../config/named_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/view_constants.dart';
 import '../../../core/extensions/color.dart';
-import '../../../core/services/location_service.dart';
-import '../../../core/utils/location_error_handler.dart';
 import '../../../injection_container.dart';
 import '../../../widgets/chip_selection/blood_group_chip_selection.dart';
 import '../../../widgets/chip_selection/gender_chip_selection.dart';
@@ -21,6 +19,8 @@ import '../../../widgets/date_picker/cupertino_date_picker_bottom_sheet.dart';
 import '../../../widgets/custom_text.dart';
 import '../../../widgets/custom_text_field.dart';
 import '../../../widgets/loading_overlay.dart';
+import '../../../data/managers/local/world_places_manager.dart';
+import '../../../widgets/bottom_sheets/location_selection_bottom_sheet.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -40,13 +40,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   DateTime? _selectedDateOfBirth;
   DateTime? _selectedLastDonationDate;
   String? _selectedGender;
-  double? _latitude;
-  double? _longitude;
+  String? _selectedCountry;
+  String? _selectedCity;
+  String? _selectedTimezone;
 
   late ThemeBloc themeBloc;
   late AuthenticationBloc authenticationBloc;
-  late LocationService locationService;
-  bool _isGettingLocation = false;
 
   bool completeProfileButtonDisable = true;
   late StateSetter completeProfileButtonStateSetter;
@@ -56,10 +55,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.initState();
     themeBloc = sl<ThemeBloc>();
     authenticationBloc = sl<AuthenticationBloc>();
-    locationService = sl<LocationService>();
     _addTextControllersListeners();
   }
-
   @override
   void dispose() {
     _addressController.removeListener(_updateButtonState);
@@ -125,69 +122,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _updateButtonState();
   }
 
-  Future<void> _getCurrentLocation() async {
-    if (_isGettingLocation) return;
-    setState(() => _isGettingLocation = true);
+  Future<void> _showLocationSelection() async {
+    final result = await LocationSelectionBottomSheet.show(
+      context: context,
+      initialCountry: _selectedCountry,
+      initialCity: _selectedCity,
+    );
 
-    try {
-      final locationResult = await locationService.getCurrentLocation();
+    if (result != null) {
       setState(() {
-        _latitude = locationResult.latitude;
-        _longitude = locationResult.longitude;
-        if (locationResult.address != null &&
-            locationResult.address!.isNotEmpty) {
-          _addressController.text = locationResult.address!;
-        }
-        _isGettingLocation = false;
+        _selectedCountry = result['country'];
+        _selectedCity = result['city'];
+        _addressController.text = '${_selectedCity ?? ""}${_selectedCity != null ? ", " : ""}${_selectedCountry ?? ""}';
       });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          _snackBar(
-            ViewConstants.locationRetrievedSuccessfully.tr(),
-            Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
-    } on LocationException catch (e) {
-      setState(() => _isGettingLocation = false);
-      if (mounted) {
-        final errorMessage = getLocationErrorMessage(e);
-        if (e.type == LocationErrorType.permissionPermanentlyDenied) {
-          _showPermissionDialog(errorMessage);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            _snackBar(
-              errorMessage,
-              Colors.red,
-              action: e.type == LocationErrorType.locationDisabled
-                  ? SnackBarAction(
-                      label: ViewConstants.settings.tr(),
-                      textColor: Colors.white,
-                      onPressed: () async =>
-                          await locationService.openSettings(),
-                    )
-                  : null,
-              duration: const Duration(seconds: 4),
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      setState(() => _isGettingLocation = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          _snackBar(
-            '${ViewConstants.failedToGetLocation.tr()}: ${e.toString()}',
-            Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
+      _updateButtonState();
     }
   }
 
   bool _validateForm() {
+
     if (_selectedBloodGroup == null || _selectedBloodGroup!.isEmpty) {
       return false;
     }
@@ -209,11 +162,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     authenticationBloc.add(
       CompleteOnboardingEvent(
         bloodGroup: _selectedBloodGroup,
-        latitude: _latitude,
-        longitude: _longitude,
-        address: _addressController.text.trim().isNotEmpty
-            ? _addressController.text.trim()
-            : null,
+        country: _selectedCountry,
+        city: _selectedCity,
+        timezone: _selectedTimezone,
         dateOfBirth: _selectedDateOfBirth,
         gender: _selectedGender,
         emergencyContactName:
@@ -226,142 +177,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 : null,
         lastDonationDate: _selectedLastDonationDate,
       ),
-    );
-  }
-
-  void _showPermissionDialog(String message) {
-    final baseTheme = themeBloc.state.baseTheme;
-    showDialog(
-      context: context,
-      barrierColor: Colors.black.withOpacity(0.4),
-      builder: (context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Container(
-            decoration: BoxDecoration(
-              color: baseTheme.background,
-              borderRadius: BorderRadius.circular(AppConstants.radius20Px),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.12),
-                  blurRadius: 32,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.10),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.location_off_rounded,
-                        color: Colors.orange.shade700,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Text(
-                        ViewConstants.locationPermissionRequired.tr(),
-                        style: TextStyle(
-                          fontFamily: AppConstants.fontFamilyLato,
-                          fontSize: AppConstants.font16Px,
-                          fontWeight: FontWeight.w700,
-                          color: baseTheme.textColor,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  message,
-                  style: TextStyle(
-                    fontFamily: AppConstants.fontFamilyLato,
-                    fontSize: AppConstants.font14Px,
-                    fontWeight: FontWeight.w400,
-                    color: baseTheme.textColor.fixedOpacity(0.55),
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: OutlinedButton.styleFrom(
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 13),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppConstants.radius12Px,
-                            ),
-                          ),
-                          side: BorderSide(
-                            color: baseTheme.textColor.fixedOpacity(0.18),
-                          ),
-                        ),
-                        child: Text(
-                          ViewConstants.cancel.tr(),
-                          style: TextStyle(
-                            fontFamily: AppConstants.fontFamilyLato,
-                            fontSize: AppConstants.font14Px,
-                            fontWeight: FontWeight.w600,
-                            color: baseTheme.textColor.fixedOpacity(0.7),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          Navigator.pop(context);
-                          await locationService.openSettings();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: baseTheme.primary,
-                          foregroundColor: baseTheme.white,
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 13),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppConstants.radius12Px,
-                            ),
-                          ),
-                          elevation: 0,
-                          shadowColor: Colors.transparent,
-                        ),
-                        child: Text(
-                          ViewConstants.openSettings.tr(),
-                          style: TextStyle(
-                            fontFamily: AppConstants.fontFamilyLato,
-                            fontSize: AppConstants.font14Px,
-                            fontWeight: FontWeight.w700,
-                            color: baseTheme.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 
@@ -480,39 +295,29 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         const SizedBox(height: AppConstants.gap12Px),
 
                         CustomTextField(
-                          labelText: ViewConstants.address,
-                          hintText: ViewConstants.addressHint,
+                          labelText: ViewConstants.location, 
+                          hintText: 'Select your country and city',
                           controller: _addressController,
-                          keyboardType: TextInputType.streetAddress,
+                          readOnly: true,
+                          onTap: _showLocationSelection,
                           prefixIcon: Icon(
                             Icons.location_on_rounded,
                             color: baseTheme.primary,
                           ),
-                          suffixIcon: _isGettingLocation
-                              ? Padding(
-                                  padding: const EdgeInsets.all(
-                                    AppConstants.gap12Px,
-                                  ),
-                                  child: SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor:
-                                          AlwaysStoppedAnimation<Color>(
-                                        baseTheme.primary,
-                                      ),
-                                    ),
-                                  ),
+                          suffixIcon: (_selectedCountry != null || _selectedCity != null)
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear, size: 18),
+                                  onPressed: () {
+                                    setState(() {
+                                      _selectedCountry = null;
+                                      _selectedCity = null;
+                                      _addressController.clear();
+                                    });
+                                    _updateButtonState();
+                                  },
                                 )
-                              : IconButton(
-                                  icon: Icon(
-                                    Icons.my_location_rounded,
-                                    color: baseTheme.primary,
-                                  ),
-                                  onPressed: _getCurrentLocation,
-                                  tooltip: ViewConstants.getCurrentLocation,
-                                ),
+                              : null,
+                          translate: false,
                         ),
 
                         const SizedBox(height: AppConstants.gap12Px),

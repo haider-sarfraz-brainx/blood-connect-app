@@ -38,6 +38,8 @@ class BloodRequestBloc extends Bloc<BloodRequestEvent, BloodRequestState> {
         unitsRequired: event.unitsRequired,
         hospitalName: event.hospitalName,
         hospitalAddress: event.hospitalAddress,
+        country: event.country,
+        city: event.city,
         contactNumber: event.contactNumber,
         status: BloodRequestStatus.pending,
         notes: event.notes,
@@ -118,6 +120,8 @@ class BloodRequestBloc extends Bloc<BloodRequestEvent, BloodRequestState> {
       final requests = await _supabaseService.getBloodRequestsForHome(
         bloodGroup: event.bloodGroup,
         excludeUserId: excludeUserId,
+        country: event.country,
+        city: event.city,
       );
       emit(BloodRequestsLoaded(requests));
     } catch (e) {

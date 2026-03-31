@@ -224,6 +224,9 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
           userId: currentUser.id,
           name: event.name,
           phone: event.phone,
+          country: event.country,
+          city: event.city,
+          timezone: event.timezone,
         );
       },
       (updatedUser) async {
@@ -270,7 +273,9 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
           bloodGroup: event.bloodGroup,
           latitude: event.latitude,
           longitude: event.longitude,
-          address: event.address,
+          country: event.country,
+          city: event.city,
+          timezone: event.timezone,
           dateOfBirth: event.dateOfBirth,
           gender: event.gender,
           emergencyContactName: event.emergencyContactName,
