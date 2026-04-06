@@ -24,7 +24,6 @@ import '../../../widgets/bottom_sheets/blood_group_filter_bottom_sheet.dart';
 import '../../../widgets/custom_text.dart';
 import '../../../widgets/custom_text_field.dart';
 import '../../../widgets/skeleton/request_card_skeleton.dart';
-import '../donors/widgets/greeting_dialog.dart';
 import '../../../widgets/bottom_sheets/location_selection_bottom_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -133,43 +132,40 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _handleAcceptRequest(
-      BuildContext context,
-      BloodRequestModel request,
-      BaseTheme baseTheme,
-      ) async {
-    showDialog(
-      context: context,
-      builder: (_) => GreetingDialog(
-        recipientName: request.patientName,
-        onSend: (message) {
-          
-          context.read<BloodRequestBloc>().add(UpdateBloodRequestStatusEvent(
-                requestId: request.id,
-                status: BloodRequestStatus.offered,
-              ));
-
-          sl<MessagingBloc>().add(CreateConversationEvent(
-            recipientId: request.userId,
-            requestId: request.id,
-            initialMessage: message,
-          ));
-          
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: CustomText(
-                text: ViewConstants.helpRequestSent,
-                textColor: Colors.white,
-              ),
-              backgroundColor: Colors.green,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppConstants.radius12Px),
-              ),
-            ),
-          );
-        },
-      ),
-    );
+    BuildContext context,
+    BloodRequestModel request,
+  ) async {
+    try {
+      final conv = await supabaseService.acceptBloodRequestAndOpenChat(
+        requestId: request.id,
+        requestOwnerId: request.userId,
+        initialMessage: ViewConstants.donorReadyToHelpAutoMessage.tr(),
+      );
+      sl<MessagingBloc>().add(LoadConversationsEvent());
+      if (!context.mounted) return;
+      _loadRequests();
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => ChatScreen(conversation: conv),
+        ),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: CustomText(
+            text: e.toString(),
+            textColor: Colors.white,
+            translate: false,
+          ),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppConstants.radius12Px),
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -420,7 +416,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: _HomeRequestCard(
                   request: request,
                   baseTheme: baseTheme,
-                  onAccept: () => _handleAcceptRequest(context,request, themeBloc.state.baseTheme),
+                  onAccept: () => _handleAcceptRequest(context, request),
                   canAccept: request.status == BloodRequestStatus.pending,
                 ),
               );

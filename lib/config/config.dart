@@ -27,8 +27,27 @@ class Config {
   static const String privacyPolicyUrl = '';
   static const String termsOfUseUrl = '';
   static const String contactUsEmail = '';
+  
+  static String get fcmServerKey => dotenv.env['FIREBASE_SERVER_KEY'] ?? '';
 
   static String get supabaseUrl => dotenv.env['SUPABASE_URL'] ?? '';
   static String get supabaseAnonKey => dotenv.env['SUPABASE_ANON_KEY'] ?? '';
+
+  /// Firebase / FCM — optional until you add keys to `.env` and platform config files.
+  static String get firebaseProjectId => dotenv.env['FIREBASE_PROJECT_ID'] ?? '';
+  static String get firebaseMessagingSenderId =>
+      dotenv.env['FIREBASE_MESSAGING_SENDER_ID'] ?? '';
+  static String get firebaseStorageBucket =>
+      dotenv.env['FIREBASE_STORAGE_BUCKET'] ?? '';
+  static String get firebaseAndroidApiKey =>
+      dotenv.env['FIREBASE_ANDROID_API_KEY'] ?? '';
+  static String get firebaseAndroidAppId =>
+      dotenv.env['FIREBASE_ANDROID_APP_ID'] ?? '';
+  static String get firebaseIosApiKey =>
+      dotenv.env['FIREBASE_IOS_API_KEY'] ?? '';
+  static String get firebaseIosAppId =>
+      dotenv.env['FIREBASE_IOS_APP_ID'] ?? '';
+  static String get firebaseIosBundleId =>
+      dotenv.env['FIREBASE_IOS_BUNDLE_ID'] ?? '';
 
 }

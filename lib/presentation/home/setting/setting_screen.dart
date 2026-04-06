@@ -1,7 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import '../../common/web_view_screen.dart';
 import '../../../bloc/authentication_bloc/authentication_bloc.dart';
 import '../../../bloc/authentication_bloc/authentication_events.dart';
@@ -244,6 +246,40 @@ class _SettingScreenState extends State<SettingScreen> {
                               ),
                             ],
                           ),
+
+                          const SizedBox(height: 28),
+
+                          _SectionLabel(
+                            label: 'Push Notifications (Dev Only)',
+                            baseTheme: baseTheme,
+                            translate: false,
+                          ),
+                          const SizedBox(height: 10),
+                          _SettingsGroup(
+                            baseTheme: baseTheme,
+                            children: [
+                              _SettingsTile(
+                                icon: Icons.token_rounded,
+                                title: 'Copy FCM Token',
+                                baseTheme: baseTheme,
+                                settingsColors: settingsColors,
+                                onTap: () {
+                                  final token = user?.fcmToken;
+                                  if (token != null) {
+                                    Clipboard.setData(ClipboardData(text: token));
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('FCM Token copied to clipboard')),
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('FCM Token not available yet')),
+                                    );
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+
 
                         ],
                       ),

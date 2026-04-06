@@ -136,6 +136,7 @@
   "acceptRequest": "Accept Request",
   "requestAccepted": "Request accepted successfully!",
   "helpRequestSent": "Help request sent successfully!",
+  "donorReadyToHelpAutoMessage": "I've accepted your blood request and I'm ready to help. Let's coordinate here.",
   "search": "Search",
   "searchRequests": "Search requests...",
   "noRequestsAvailable": "No requests available",

@@ -79,6 +79,18 @@ class SupabaseService {
     }
   }
 
+  /// Store FCM device token for server-triggered pushes (add `fcm_token text` on `users` if missing).
+  Future<void> updateUserFcmToken(String userId, String? fcmToken) async {
+    try {
+      await client.from(DbConstants.users).update({
+        'fcm_token': fcmToken,
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      }).eq('id', userId);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<BloodRequestModel> insertBloodRequest(BloodRequestModel request) async {
     try {
       final map = request.toMap();
@@ -240,6 +252,35 @@ class SupabaseService {
     } catch (e) {
       rethrow;
     }
+  }
+
+  /// Home / donor flow: claim a pending request and open an [ConversationStatus.accepted] chat
+  /// with the requester (no separate "send message request" step).
+  Future<ConversationModel> acceptBloodRequestAndOpenChat({
+    required String requestId,
+    required String requestOwnerId,
+    required String initialMessage,
+  }) async {
+    await acceptBloodRequest(requestId);
+
+    final existing = await getConversationByParticipants(requestOwnerId, requestId);
+
+    if (existing == null || existing.status == ConversationStatus.rejected) {
+      final conv = await createConversation(
+        recipientId: requestOwnerId,
+        requestId: requestId,
+        initialMessage: initialMessage,
+      );
+      if (conv.status != ConversationStatus.accepted) {
+        return updateConversationStatus(conv.id, ConversationStatus.accepted);
+      }
+      return conv;
+    }
+
+    if (existing.status != ConversationStatus.accepted) {
+      return updateConversationStatus(existing.id, ConversationStatus.accepted);
+    }
+    return existing;
   }
 
   Future<void> deleteBloodRequest(String requestId) async {

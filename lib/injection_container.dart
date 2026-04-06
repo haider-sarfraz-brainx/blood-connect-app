@@ -10,11 +10,14 @@ import 'data/managers/local/world_places_manager.dart';
 import 'data/managers/local/local_storage.dart';
 import 'data/managers/local/session_manager.dart';
 import 'data/managers/local/shared_preference.dart';
+import 'data/managers/remote/firebase_notification_service.dart';
 import 'data/managers/remote/supabase_service.dart';
 import 'data/repositories/local/language.dart';
 import 'data/repositories/local/theme.dart';
 import 'data/repositories/remote/authentication/authentication_repository.dart';
 import 'data/repositories/remote/messaging/messaging_repository.dart';
+import 'data/repositories/remote/notifications/notification_repository.dart';
+
 
 final sl = GetIt.instance;
 
@@ -31,6 +34,10 @@ Future<void> initializeDependencies() async {
 
   sl.registerSingleton<SupabaseService>(SupabaseService());
 
+  sl.registerSingleton<FirebaseNotificationService>(
+    FirebaseNotificationService(sl<SupabaseService>(), sl<SessionManager>()),
+  );
+
   sl.registerSingleton<ThemeRepo>(ThemeRepo(sl<LocalStorageManager>()));
   sl.registerSingleton<LanguageRepo>(LanguageRepo(sl<LocalStorageManager>()));
   sl.registerSingleton<AuthenticationRepository>(
@@ -39,6 +46,10 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<MessagingRepository>(
     MessagingRepository(sl<SupabaseService>()),
   );
+  sl.registerSingleton<NotificationRepository>(
+    NotificationRepository(sl<FirebaseNotificationService>(), sl<SupabaseService>()),
+  );
+
 
   sl.registerSingleton<LanguageBloc>(LanguageBloc(sl<LanguageRepo>()));
   sl.registerSingleton<ThemeBloc>(ThemeBloc(sl<ThemeRepo>()));
@@ -46,15 +57,18 @@ Future<void> initializeDependencies() async {
     () => AuthenticationBloc(sl<AuthenticationRepository>()),
   );
   sl.registerLazySingleton<BloodRequestBloc>(
-    () => BloodRequestBloc(sl<SupabaseService>()),
+    () => BloodRequestBloc(sl<SupabaseService>(), sl<NotificationRepository>()),
   );
+
   
   sl.registerLazySingleton<MessagingBloc>(
     () => MessagingBloc(
       messagingRepository: sl<MessagingRepository>(),
       sessionManager: sl<SessionManager>(),
+      notificationRepository: sl<NotificationRepository>(),
     ),
   );
+
 
 
   sl.registerSingleton<WorldPlacesManager>(WorldPlacesManager());

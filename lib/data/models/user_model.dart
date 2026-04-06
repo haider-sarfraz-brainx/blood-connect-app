@@ -21,6 +21,8 @@ class UserModel extends Equatable {
   final String? emergencyContactPhone;
   final DateTime? lastDonationDate;
   final bool onboardingCompleted;
+  final String? fcmToken;
+
 
   const UserModel({
     required this.id,
@@ -41,7 +43,9 @@ class UserModel extends Equatable {
     this.emergencyContactPhone,
     this.lastDonationDate,
     this.onboardingCompleted = false,
+    this.fcmToken,
   });
+
 
   Map<String, dynamic> toMap() {
     return {
@@ -63,7 +67,9 @@ class UserModel extends Equatable {
       'emergency_contact_phone': emergencyContactPhone,
       'last_donation_date': lastDonationDate?.toIso8601String(),
       'onboarding_completed': onboardingCompleted,
+      'fcm_token': fcmToken,
     };
+
   }
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
@@ -92,7 +98,9 @@ class UserModel extends Equatable {
           ? DateTime.parse(map['last_donation_date'] as String)
           : null,
       onboardingCompleted: map['onboarding_completed'] as bool? ?? false,
+      fcmToken: map['fcm_token'] as String?,
     );
+
   }
 
   String toJson() => jsonEncode(toMap());
@@ -120,6 +128,7 @@ class UserModel extends Equatable {
     String? emergencyContactPhone,
     DateTime? lastDonationDate,
     bool? onboardingCompleted,
+    String? fcmToken,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -140,7 +149,9 @@ class UserModel extends Equatable {
       emergencyContactPhone: emergencyContactPhone ?? this.emergencyContactPhone,
       lastDonationDate: lastDonationDate ?? this.lastDonationDate,
       onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
+      fcmToken: fcmToken ?? this.fcmToken,
     );
+
   }
 
   String? get address {
@@ -197,6 +208,8 @@ class UserModel extends Equatable {
         emergencyContactPhone,
         lastDonationDate,
         onboardingCompleted,
+        fcmToken,
       ];
+
 }
 

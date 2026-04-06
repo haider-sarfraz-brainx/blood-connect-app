@@ -151,6 +151,8 @@ class ViewConstants {
   static const String acceptRequest = 'acceptRequest';
   static const String requestAccepted = 'requestAccepted';
   static const String helpRequestSent = 'helpRequestSent';
+  /// Auto first line when a donor accepts a request from Home (conversation opens immediately).
+  static const String donorReadyToHelpAutoMessage = 'donorReadyToHelpAutoMessage';
   static const String search = 'search';
   static const String searchRequests = 'searchRequests';
   static const String noRequestsAvailable = 'noRequestsAvailable';

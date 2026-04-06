@@ -3,11 +3,15 @@ import 'blood_request_events.dart';
 import 'blood_request_states.dart';
 import '../../data/managers/remote/supabase_service.dart';
 import '../../data/models/blood_request_model.dart';
+import '../../data/repositories/remote/notifications/notification_repository.dart';
+
 
 class BloodRequestBloc extends Bloc<BloodRequestEvent, BloodRequestState> {
   final SupabaseService _supabaseService;
+  final NotificationRepository _notificationRepository;
 
-  BloodRequestBloc(this._supabaseService) : super(const BloodRequestInitial()) {
+  BloodRequestBloc(this._supabaseService, this._notificationRepository) : super(const BloodRequestInitial()) {
+
     on<CreateBloodRequestEvent>(_onCreateBloodRequest);
     on<GetBloodRequestsEvent>(_onGetBloodRequests);
     on<GetActiveBloodRequestsEvent>(_onGetActiveBloodRequests);
@@ -148,6 +152,14 @@ class BloodRequestBloc extends Bloc<BloodRequestEvent, BloodRequestState> {
 
       final result = await _supabaseService.updateBloodRequest(updatedRequest);
       emit(BloodRequestUpdated(result));
+
+      // Send Notification
+      _notificationRepository.sendBloodRequestStatusNotification(
+        recipientId: result.userId,
+        requestPatientName: result.patientName,
+        status: event.status,
+      );
+
     } catch (e) {
       emit(BloodRequestError(e.toString()));
     }
@@ -174,6 +186,14 @@ class BloodRequestBloc extends Bloc<BloodRequestEvent, BloodRequestState> {
     try {
       final result = await _supabaseService.acceptBloodRequest(event.requestId);
       emit(BloodRequestUpdated(result));
+
+      // Send Notification to requester
+      _notificationRepository.sendBloodRequestStatusNotification(
+        recipientId: result.userId,
+        requestPatientName: result.patientName,
+        status: BloodRequestStatus.inProgress,
+      );
+
     } catch (e) {
       String errorMessage = 'Failed to accept request';
       if (e.toString().contains('PGRST116') || e.toString().contains('0 rows')) {

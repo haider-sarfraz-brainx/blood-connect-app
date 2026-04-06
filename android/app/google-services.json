@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "752198096425",
+    "project_id": "quick-blood-16aca",
+    "storage_bucket": "quick-blood-16aca.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:752198096425:android:2d306e8bebe6315dd66e38",
+        "android_client_info": {
+          "package_name": "com.brainx.quickblood"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_llnUemxWoMK-N4aBPen_mVV0Zk7QpuQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

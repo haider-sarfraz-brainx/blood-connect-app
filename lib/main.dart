@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'bloc/language_bloc/language_bloc.dart';
@@ -7,7 +8,9 @@ import 'config/named_router.dart';
 import 'core/constants/app_assets.dart';
 import 'core/constants/app_constants.dart';
 import 'data/repositories/local/language.dart';
+import 'data/managers/remote/firebase_notification_service.dart';
 import 'data/repositories/local/theme.dart';
+import 'core/firebase/firebase_background_handler.dart';
 import 'injection_container.dart';
 import 'config/languages/language_config.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -20,8 +23,11 @@ final navigatorKey = GlobalKey<NavigatorState>();
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
   await dotenv.load(fileName: '.env');
   await initializeDependencies();
+  await sl<FirebaseNotificationService>().initialize();
   await EasyLocalization.ensureInitialized();
   
   runApp(

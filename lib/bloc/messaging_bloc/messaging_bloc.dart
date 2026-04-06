@@ -4,14 +4,18 @@ import '../../data/repositories/remote/messaging/messaging_repository.dart';
 import '../../data/models/message_model.dart';
 import '../../data/models/conversation_model.dart';
 import '../../data/managers/local/session_manager.dart';
+import '../../data/repositories/remote/notifications/notification_repository.dart';
+
 import 'messaging_events.dart';
 import 'messaging_states.dart';
 
 class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
   final MessagingRepository _messagingRepository;
   final SessionManager _sessionManager;
+  final NotificationRepository _notificationRepository;
 
   String get _currentUserId => _sessionManager.getUser()?.id ?? '';
+  String get _currentUserName => _sessionManager.getUser()?.name ?? 'Someone';
 
   StreamSubscription<List<ConversationModel>>? _conversationsSubscription;
   StreamSubscription<List<MessageModel>>? _messagesSubscription;
@@ -19,9 +23,12 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
   MessagingBloc({
     required MessagingRepository messagingRepository,
     required SessionManager sessionManager,
+    required NotificationRepository notificationRepository,
   })  : _messagingRepository = messagingRepository,
         _sessionManager = sessionManager,
+        _notificationRepository = notificationRepository,
         super(const MessagingState()) {
+
     on<LoadConversationsEvent>(_onLoadConversations);
     on<CreateConversationEvent>(_onCreateConversation);
     on<AcceptConversationEvent>(_onAcceptConversation);
@@ -78,6 +85,14 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
         initialMessage: event.initialMessage,
       );
       emit(state.copyWith(createdConversation: conversation, isLoading: false));
+
+      // Send Notification to recipient
+      _notificationRepository.sendMessageRequestNotification(
+        recipientId: event.recipientId,
+        senderName: _currentUserName,
+        requestId: event.requestId,
+      );
+
     } catch (e) {
       emit(state.copyWith(error: e.toString(), isLoading: false));
     }
@@ -109,6 +124,13 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
         event.conversationId,
         ConversationStatus.accepted,
       );
+
+      // Send Notification to recipient (the one who initiated the request)
+      _notificationRepository.sendMessageApprovedNotification(
+        recipientId: updated.initiatorId,
+        senderName: _currentUserName,
+      );
+
       
       // Update local state immediately for better UX
       final updatedConversations = state.conversations.map((c) {

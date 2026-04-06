@@ -47,7 +47,7 @@ class _BloodRequestScreenState extends State<BloodRequestScreen>
   @override
   void initState() {
     super.initState();
-    _bloc = BloodRequestBloc(sl<SupabaseService>());
+    _bloc = sl<BloodRequestBloc>();
     _tabController = TabController(length: _tabKeys.length, vsync: this);
     _tabController.addListener(_onTabChanged);
     _loadRequests();
@@ -63,7 +63,6 @@ class _BloodRequestScreenState extends State<BloodRequestScreen>
   void dispose() {
     _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
-    _bloc.close();
     super.dispose();
   }
 
